@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KaziDelicious Presents Whimsical Chaos — Artist Submission | The Rising Phoenix Gallery</title>
+<style>
+:root{--bg:#0a0806;--bg-mid:#13100d;--bg-card:#1c1710;--bg-input:#111009;
+  --border:#3a2e1e;--glow:#c8862a;--ember:#e8933a;--gold:#d4a843;
+  --gold-light:#f0c96a;--ash:#8a7a68;--smoke:#b0a090;--white:#f5efe6;
+  --green:#2e7d52;--red:#c0392b;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--white);font-family:'Raleway',sans-serif;min-height:100vh;padding-bottom:60px;}
+header{background:linear-gradient(180deg,#1a1208 0%,var(--bg) 100%);border-bottom:1px solid var(--border);
+  padding:14px 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.6);}
+.logo-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;}
+.logo-sub{font-size:10px;letter-spacing:3px;color:var(--ash);text-transform:uppercase;margin-top:2px;}
+.wrap{max-width:800px;margin:0 auto;padding:24px 16px;}
+.dates-bar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px;}
+@media(max-width:520px){.dates-bar{grid-template-columns:1fr;}}
+.date-chip{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px 14px;}
+.date-label{font-size:9px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-bottom:3px;}
+.date-value{font-size:13px;color:var(--smoke);}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:28px;}
+.section-head h2{font-family:'Cinzel',serif;font-size:12px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;white-space:nowrap;}
+.section-line{flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent);}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:14px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr;}.span2{grid-column:span 1!important;}}
+.span2{grid-column:span 2;}
+.field{display:flex;flex-direction:column;gap:5px;}
+label{font-size:10px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;font-weight:600;}
+input,select,textarea{background:var(--bg-input);border:1px solid var(--border);border-radius:5px;
+  padding:8px 11px;color:var(--white);font-family:'Raleway',sans-serif;font-size:14px;width:100%;color-scheme:dark;}
+textarea{resize:vertical;min-height:80px;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--glow);box-shadow:0 0 0 2px rgba(200,134,42,.15);}
+.btn{padding:9px 18px;border-radius:5px;border:none;font-family:'Raleway',sans-serif;font-size:12px;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:opacity .2s;}
+.btn:hover{opacity:.85;}
+.btn-primary{background:linear-gradient(135deg,var(--ember),var(--gold));color:#0a0806;font-weight:700;}
+.btn-outline{background:transparent;border:1px solid var(--glow);color:var(--gold);}
+.btn-success{background:linear-gradient(135deg,#2e7d52,#3aca7a);color:#0a0806;font-weight:700;}
+.btn-danger{background:rgba(192,57,43,.2);border:1px solid rgba(192,57,43,.5);color:#e07060;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.artwork-card{background:var(--bg-mid);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px;position:relative;}
+.artwork-num{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--ember);text-transform:uppercase;margin-bottom:10px;}
+.img-preview{max-width:120px;max-height:120px;object-fit:cover;border-radius:4px;border:1px solid var(--border);display:none;margin-top:6px;}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.hint{font-size:11px;color:var(--ash);line-height:1.6;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--bg-card);border:1px solid var(--glow);border-radius:6px;
+  padding:10px 18px;font-size:13px;color:var(--white);z-index:9999;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none;opacity:0;transition:opacity .3s;}
+.toast.show{opacity:1;}
+.release-box{background:rgba(200,134,42,.06);border:1px solid rgba(200,134,42,.2);border-radius:5px;padding:12px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-title">The Rising Phoenix Gallery</div>
+  <div class="logo-sub">Artist Artwork Submission</div>
+</header>
+<div class="wrap">
+  <div class="section-head" style="margin-top:0;">
+    <h2>KaziDelicious Presents Whimsical Chaos</h2>
+    <div class="section-line"></div>
+  </div>
+  <p class="hint" style="margin-bottom:16px;">Please fill out your contact information and add each artwork you are submitting for this show. When done, click <strong style="color:var(--gold);">Export &amp; Email Submission</strong> at the bottom of this page.</p>
+
+  <!-- Key Dates -->
+  <div class="dates-bar">
+    <div class="date-chip"><div class="date-label">Artwork Drop-off</div><div class="date-value">March 27, 2026 – March 30, 2026</div></div>
+    <div class="date-chip"><div class="date-label">Opening Reception</div><div class="date-value">April 3, 2026 at 17:00</div></div>
+    <div class="date-chip"><div class="date-label">Exhibition Dates</div><div class="date-value">April 3, 2026 – April 25, 2026</div></div>
+    <div class="date-chip"><div class="date-label">Artwork Pickup Deadline</div><div class="date-value">April 26, 2026</div></div>
+  </div>
+
+  <!-- Artist Contact Info -->
+  <div class="section-head"><h2>Your Contact Information</h2><div class="section-line"></div></div>
+  <div class="card">
+    <div class="form-grid">
+      <div class="field span2"><label>Your Name (as it should appear on wall cards and agreements) *</label><input type="text" id="a-name" placeholder="Full name"></div>
+      <div class="field"><label>Email *</label><input type="email" id="a-email" placeholder="your@email.com"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="a-phone" placeholder="(000) 000-0000"></div>
+      <div class="field"><label>Website</label><input type="text" id="a-web" placeholder="https://"></div>
+      <div class="field"><label>Instagram</label><input type="text" id="a-instagram" placeholder="@handle or full URL"></div>
+      <div class="field"><label>Facebook</label><input type="text" id="a-facebook" placeholder="https://facebook.com/..."></div>
+      <div class="field"><label>Other Socials</label><input type="text" id="a-socials" placeholder="TikTok, Etsy, Pinterest..."></div>
+      <div class="field"><label>Preferred Pronouns</label><input type="text" id="a-pronouns" placeholder="e.g. she/her, they/them"></div>
+      <div class="field span2"><label>Mailing Address</label><input type="text" id="a-address" placeholder="Street, City, State ZIP"></div>
+      <div class="field span2"><label>Medium Specialties</label><input type="text" id="a-mediums" placeholder="e.g. Oil painting, watercolor, mixed media"></div>
+      <div class="field span2"><label>Short Bio <span style="color:var(--ash);font-size:9px;">(2–3 sentences for show programs and social media)</span></label>
+        <textarea id="a-bio" placeholder="A brief bio in your own words..."></textarea></div>
+      <div class="field span2"><label>Artist Statement <span style="color:var(--ash);font-size:9px;">(optional)</span></label>
+        <textarea id="a-statement" rows="4" placeholder="Tell us about your work and process..."></textarea></div>
+    </div>
+    <div class="divider"></div>
+    <div class="release-box">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--smoke);">
+        <input type="checkbox" id="a-release" style="width:16px;height:16px;accent-color:var(--ember);flex-shrink:0;margin-top:2px;">
+        <span>I authorize The Rising Phoenix Gallery to photograph and use images of my submitted works for promotional purposes including social media, print, and web. <em style="color:var(--ash);">(Ref: Section 4w of Consignment Agreement)</em></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Artworks -->
+  <div class="section-head"><h2>Your Artwork Submissions</h2><div class="section-line"></div></div>
+  <div id="artwork-list"></div>
+  <button id="btn-add-artwork" class="btn btn-outline" style="width:100%;margin-bottom:20px;">&#43; Add Another Artwork</button>
+
+  <!-- Export & Email -->
+  <div class="section-head"><h2>Print Your Backing Cards</h2><div class="section-line"></div></div>
+  <div class="card">
+    <p class="hint" style="margin-bottom:12px;">Print these and attach one to the back of each piece before drop-off.</p>
+    <div class="btn-row"><button id="btn-print-cards" class="btn btn-outline">&#128438; Print My Backing Cards</button></div>
+  </div>
+
+  <div class="section-head"><h2>Consignment Agreement</h2><div class="section-line"></div></div>
+  <div class="card">
+    <p class="hint" style="margin-bottom:12px;">Please read the following consignment agreement carefully. You will sign a copy at drop-off.</p>
+    <div id="portal-agreement-text" style="font-size:10pt;line-height:1.7;color:#ddd;max-height:340px;overflow-y:auto;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:14px 16px;white-space:pre-wrap;">THE RISING PHOENIX GALLERY LLC
+EXHIBITING ARTIST CONSIGNMENT AGREEMENT
+Terms & Conditions for Short-Term Exhibition Consignments
+
+Exhibition: KaziDelicious Presents Whimsical Chaos   Dates: April 3, 2026 – April 25, 2026
+
+1. WHAT THE RISING PHOENIX GALLERY WILL DO FOR YOU
+
+Favorably display your work for sale in a professionally curated exhibition in a clean, commercial high-traffic, large storefront space located at 2817 Franklin St. Michigan City, IN 46360.
+
+Market your exhibition through a variety of media, including local print, radio, internet marketing, and special events, to name a few.
+
+Our sales staff will become expert in your art so that they can explain your process and the unique aspects of your work in a way that will enhance the customers’ experience.
+
+RPG provides the optional service of arranging commissions of artist’s new work for our clients. We handle all of the details of the transaction.
+
+Provide security and insurance, at no cost to you, which covers your work in the event of theft or damage on RPG premises during the exhibit.
+
+RPG will cover all the costs associated with the retail and exhibition space, including rent, utilities, taxes, insurance, security, maintenance, payroll, marketing, advertising, and internet.
+
+RPG will cover all costs associated with the sale of your work to clients, including display cases, cleaning, maintenance, staffing, State sales taxes, credit card processing fees, price tagging, inventory management, point-of-sale equipment, packaging and wrapping materials, delivery or shipping charges, gift boxes and bags.
+
+RPG may allow you to hold special marketing events or shows in the gallery for your list of invitees, upon mutually agreeable dates, times, and fees. You would be responsible for the cost of any refreshments for your guests.
+
+You will be invited to any special events hosted by RPG which feature your work.
+
+2. WHAT YOU AGREE TO CONSIGN FOR SALE
+
+You agree to consign for sale, to RPG, work that is selected by RPG, in its sole discretion, for display during your exhibition. We will clearly explain to you the reasons for our selection or non-selection of your proposed items.
+
+RPG must agree that your retail price is appropriate for the item(s) consigned. RPG can assist you in setting an appropriate retail price for your work.
+
+You must guarantee that any work offered to RPG for consignment is (1) authentic; (2) that you own the work free and clear of any claims, liens, or encumbrances; (3) that you have the right to sell the work; and (4) that you will defend the title of the work being consigned against any claim or demand by any other person.
+
+You must agree to keep RPG informed of your current email address, mailing address, and telephone numbers. If you neglect to inform RPG of these changes, after ninety days of our attempts to return your consigned work or remit payment to you, ownership of the consigned work will be transferred to RPG and any further obligation we have to you will be over.
+
+3. HOW PAYMENT IS HANDLED
+
+RPG will offer for sale all items you consign for sale with RPG, at your retail price.
+
+Payment to you for consigned work sold by RPG, or commissions arranged by RPG on your behalf, will be 60% of the actual sale price.
+
+RPG will prepare an accounting of all sales each month, and payment will be made to you no more than 30 business days after the date any sale is finalized.
+
+RPG considers a sale finalized when 100% of the amount due has been paid and verified clear from the bank or credit card company, and RPG’s 14-day no questions asked return period has expired.
+
+4. RPG’S PERMITTED USE OF YOUR CONSIGNED WORK
+
+RPG may sell an item with the understanding that the client has the absolute right to return the item for a full refund within 14 days.
+
+RPG may display consigned work in exhibitions or other types of promotional events arranged by RPG either on or off RPG premises.
+
+RPG may photograph or reproduce images of your consigned work for promotional purposes. These images may appear in print or electronic materials and may or may not be captioned with attribution depending on the circumstances. (See Section 4w — Photo/Promotional Use Authorization.)
+
+5. DELIVERY AND RETURN OF CONSIGNED ARTWORK
+
+Delivery of consigned work to RPG will be your sole responsibility, including insuring consigned work during periods of transit and delivery.
+
+All consigned work will be returned to you at the conclusion of your exhibition. Return of the consigned work to you will also be your sole responsibility, including insuring consigned work during periods of transit en route to you.
+
+6. EXHIBITION TERMS AND CONDITIONS
+
+Your exhibition will run for a minimum of twenty (20) days. The specific exhibition dates will be agreed upon in writing by both parties prior to delivery of any consigned work.
+
+A separate, written dated list of consigned items will be prepared by you on RPG’s form, and will be signed by both you and RPG for each new item or group of consigned items.
+
+At the conclusion of the exhibition, all unsold consigned work will be returned to you. You are responsible for retrieving or arranging return shipment of your work within 14 days of the exhibition’s close.
+
+If you do not arrange to retrieve your work within 14 days of the exhibition’s close, RPG may continue to attempt to contact you. If 30 additional days pass without response, RPG may donate the work to a qualified charitable organization.
+
+7. HANDLING OF DISCOUNTS
+
+RPG may opt to gift one of your consigned works to individuals or businesses for promotional purposes. In that event, you will be paid for the work by RPG as if the item had sold at its full retail price.
+
+RPG will not apply discounts to any specially commissioned work you accept from RPG’s clients.
+
+8. ACCEPTANCE OF WORK
+
+You should not deliver more or new work to RPG for acceptance unless we ask you to bring some. At any time, you may inquire, preferably by email, to determine if RPG would like to accept additional work into the exhibition inventory.
+
+9. RESPONSIBILITY AND INSURANCE
+
+RPG is not responsible for consigned work until the consigned work is in possession of RPG, after delivery to RPG’s premises.
+
+In the event of loss, injury, damage, or disappearance of consigned work that occurs during RPG’s possession, you will be paid the sum equal to the amount due as if the item had sold on the date of the loss at its full retail price.
+
+10. HANDLING OF PROBLEMS
+
+RPG and you both agree to act in good faith towards each other at all times.
+
+In the event that we get into a dispute about the terms of this Agreement or how they should be applied, we agree that the laws of the State of Indiana will apply.
+
+If we get into any type of dispute that we cannot resolve between us, we agree to bring the dispute to a professional arbitrator to decide. We will mutually agree to select one who is experienced in contract law, from the list of arbitrators maintained by the American Arbitration Association. Each of us will cover our own costs of the arbitration no matter how it turns out, and we agree that the arbitrator’s decision will be final and binding on both of us for all purposes.
+
+The Terms and Conditions outlined in this document are those agreed to by The Rising Phoenix Gallery for all Exhibiting Artist Agreements, effective April 1, 2017.</div>
+  </div>
+
+  <div class="section-head"><h2>Submit to Gallery</h2><div class="section-line"></div></div>
+  <div class="card">
+    <p class="hint" style="margin-bottom:14px;">When you are finished, click the button below. Your submission file will download to your device. <strong style="color:var(--gold);">Attach that file to the email that opens</strong> and send it to complete your submission.</p>
+    <div class="btn-row">
+      <button id="btn-export-email" class="btn btn-success" style="font-size:13px;padding:12px 24px;">&#8595; Export &amp; Email My Submission</button>
+    </div>
+    <p class="hint" style="margin-top:10px;">Submitting to: <strong style="color:var(--smoke);">Contact@RisingphxGallery.com</strong></p>
+  </div>
+</div>
+
+<div id="portal-toast" class="toast"></div>
+
+<script>
+var EXHIBIT_NAME='KaziDelicious Presents Whimsical Chaos';
+var GALLERY_EMAIL='Contact@RisingphxGallery.com';
+var artworkCount=0;
+
+function ptoast(msg){
+  var t=document.getElementById('portal-toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},3000);
+}
+
+function addArtwork(){
+  artworkCount++;
+  var n=artworkCount;
+  var div=document.createElement('div');
+  div.className='artwork-card';
+  div.id='artwork-'+n;
+  div.innerHTML='<div class="artwork-num">Artwork #'+n+'</div>'
+    +'<div class="form-grid">'
+    +'<div class="field span2"><label>Title *</label><input type="text" id="aw-title-'+n+'" placeholder="Title of the piece"></div>'
+    +'<div class="field"><label>Medium</label><input type="text" id="aw-medium-'+n+'" placeholder="e.g. Oil on canvas"></div>'
+    +'<div class="field"><label>Size / Dimensions</label><input type="text" id="aw-size-'+n+'" placeholder="e.g. 12&quot; x 16&quot;"></div>'
+    +'<div class="field"><label>Year Created</label><input type="text" id="aw-year-'+n+'" placeholder="e.g. 2024"></div>'
+    +'<div class="field"><label>Price ($) *</label><input type="number" id="aw-price-'+n+'" placeholder="0.00" min="0" step="0.01"></div>'
+    +'<div class="field span2"><label>Description / Artist Notes</label><textarea id="aw-desc-'+n+'" placeholder="Any notes about this piece..."></textarea></div>'
+    +'<div class="field"><label>Condition Notes</label><input type="text" id="aw-condition-'+n+'" placeholder="e.g. Excellent, minor scuff on frame"></div>'
+    +'<div class="field"><label>Availability</label>'
+    +'<select id="aw-avail-'+n+'">'
+    +'<option value="for_sale">For Sale</option>'
+    +'<option value="nfs">Not For Sale (Display Only)</option>'
+    +'<option value="commission">Commission Inquiry Only</option>'
+    +'</select></div>'
+    +'<div class="field"><label>Placement Notes <span style="color:var(--ash);font-size:9px;">(optional)</span></label><input type="text" id="aw-placement-'+n+'" placeholder="e.g. Needs natural light, hang low"></div>'
+    +'<div class="field"><label>Insurance Value ($)</label><input type="number" id="aw-insurance-'+n+'" placeholder="Replacement value" min="0" step="0.01"></div>'
+    +'<div class="field"><label>Type</label>'
+    +'<select id="aw-type-'+n+'">'
+    +'<option value="consignment">Consignment (for sale)</option>'
+    +'<option value="loan">Loan (display only, not for sale)</option>'
+    +'</select></div>'
+    +'<div class="field"><label>Edition Info <span style="color:var(--ash);font-size:9px;">(prints only)</span></label><input type="text" id="aw-edition-'+n+'" placeholder="e.g. 3 of 25"></div>'
+    +'</div>'
+    +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'
+    +'<label style="font-size:10px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;">Certificate of Authenticity</label>'
+    +'<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--smoke);cursor:pointer;">'
+    +'<input type="checkbox" id="aw-coa-'+n+'" style="accent-color:var(--ember);"> Included with this piece</label>'
+    +'</div>'
+    +'<div style="margin-top:12px;">'
+    +'<label style="font-size:10px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;display:block;margin-bottom:6px;">Photo of Artwork</label>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">'
+    +'<label class="btn btn-outline" style="cursor:pointer;font-size:11px;padding:6px 12px;margin:0;">&#128247; Take Photo<input type="file" accept="image/*" capture="environment" id="aw-photo-cam-'+n+'" data-n="'+n+'" style="display:none;"></label>'
+    +'<label class="btn btn-outline" style="cursor:pointer;font-size:11px;padding:6px 12px;margin:0;">&#128194; Choose File<input type="file" accept="image/*" id="aw-photo-lib-'+n+'" data-n="'+n+'" style="display:none;"></label>'
+    +'</div>'
+    +'<img id="aw-img-preview-'+n+'" class="img-preview">'
+    +'<input type="hidden" id="aw-img-data-'+n+'">'
+    +'</div>'
+    +'<div class="btn-row"><button class="btn btn-danger" data-rm="'+n+'" type="button">&#128465; Remove This Artwork</button></div>';
+  document.getElementById('artwork-list').appendChild(div);
+  var camInp=document.getElementById('aw-photo-cam-'+n);
+  var libInp=document.getElementById('aw-photo-lib-'+n);
+  var rmBtn=div.querySelector('[data-rm]'  );
+  if(camInp)camInp.addEventListener('change',function(){previewArtworkPhoto(this,n);});
+  if(libInp)libInp.addEventListener('change',function(){previewArtworkPhoto(this,n);});
+  if(rmBtn)rmBtn.addEventListener('click',function(){removeArtwork(n);});
+}
+
+function previewArtworkPhoto(inp,n){
+  if(!inp.files||!inp.files[0])return;
+  // Resize to max 800px to keep file size reasonable
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img2=new Image();
+    img2.onload=function(){
+      var max=800;var w=img2.width;var h=img2.height;
+      if(w>max){h=Math.round(h*max/w);w=max;}
+      var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img2,0,0,w,h);
+      var data=canvas.toDataURL('image/jpeg',0.7);
+      document.getElementById('aw-img-data-'+n).value=data;
+      var prev=document.getElementById('aw-img-preview-'+n);
+      prev.src=data;prev.style.display='block';
+    };
+    img2.src=e.target.result;
+  };
+  reader.readAsDataURL(inp.files[0]);
+}
+
+function removeArtwork(n){
+  var el=document.getElementById('artwork-'+n);
+  if(el)el.remove();
+}
+
+function collectSubmission(){
+  var name=document.getElementById('a-name').value.trim();
+  var email=document.getElementById('a-email').value.trim();
+  if(!name){ptoast('Please enter your name.');return null;}
+  if(!email){ptoast('Please enter your email address.');return null;}
+
+  var artist={
+    name:name,email:email,
+    phone:document.getElementById('a-phone').value.trim(),
+    web:document.getElementById('a-web').value.trim(),
+    instagram:document.getElementById('a-instagram').value.trim(),
+    facebook:document.getElementById('a-facebook').value.trim(),
+    socials:document.getElementById('a-socials').value.trim(),
+    pronouns:document.getElementById('a-pronouns').value.trim(),
+    address:document.getElementById('a-address').value.trim(),
+    mediums:document.getElementById('a-mediums').value.trim(),
+    bio:document.getElementById('a-bio').value.trim(),
+    statement:document.getElementById('a-statement').value.trim(),
+    photoRelease:document.getElementById('a-release').checked
+  };
+
+  var artworks=[];
+  for(var n=1;n<=artworkCount;n++){
+    var el=document.getElementById('artwork-'+n);
+    if(!el)continue;
+    var title=(document.getElementById('aw-title-'+n)||{}).value||'';
+    if(!title.trim())continue;
+    artworks.push({
+      title:title.trim(),
+      medium:(document.getElementById('aw-medium-'+n)||{}).value||'',
+      size:(document.getElementById('aw-size-'+n)||{}).value||'',
+      year:(document.getElementById('aw-year-'+n)||{}).value||'',
+      price:(document.getElementById('aw-price-'+n)||{}).value||'0',
+      description:(document.getElementById('aw-desc-'+n)||{}).value||'',
+      condition:(document.getElementById('aw-condition-'+n)||{}).value||'',
+      availability:(document.getElementById('aw-avail-'+n)||{}).value||'for_sale',
+      placement:(document.getElementById('aw-placement-'+n)||{}).value||'',
+      insuranceValue:(document.getElementById('aw-insurance-'+n)||{}).value||'',
+      type:(document.getElementById('aw-type-'+n)||{}).value||'consignment',
+      edition:(document.getElementById('aw-edition-'+n)||{}).value||'',
+      coa:!!(document.getElementById('aw-coa-'+n)||{}).checked,
+      photo:(document.getElementById('aw-img-data-'+n)||{}).value||''
+    });
+  }
+  if(!artworks.length){ptoast('Please add at least one artwork.');return null;}
+
+  return {
+    _type:'rpg_submission',
+    _version:1,
+    exhibitName:EXHIBIT_NAME,
+    submittedAt:new Date().toISOString(),
+    artist:artist,
+    artworks:artworks
+  };
+}
+
+function printBackingCards(){
+  var cards='<div style="display:flex;flex-wrap:wrap;gap:0;padding:10px;">';
+  var printed=0;
+  for(var n=1;n<=artworkCount;n++){
+    var el=document.getElementById('artwork-'+n);
+    if(!el)continue;
+    var title=(document.getElementById('aw-title-'+n)||{}).value||'';
+    var price=(document.getElementById('aw-price-'+n)||{}).value||'';
+    if(!title.trim())continue;
+    var artistName=document.getElementById('a-name').value.trim()||'Artist Name';
+    var phone=document.getElementById('a-phone').value.trim();
+    var email=document.getElementById('a-email').value.trim();
+    cards+='<div style="width:4in;height:2.5in;border:1px solid #ccc;padding:14px 16px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;font-family:Georgia,serif;page-break-inside:avoid;background:#fff;color:#000;margin:4px;">';
+    cards+='<div>';
+    cards+='<div style="font-size:14px;font-weight:bold;margin-bottom:4px;">'+title+'</div>';
+    cards+='<div style="font-size:12px;color:#444;margin-bottom:8px;">'+artistName+'</div>';
+    cards+='</div>';
+    cards+='<div style="display:flex;justify-content:space-between;align-items:flex-end;">';
+    cards+='<div style="font-size:11px;color:#555;line-height:1.6;">';
+    if(phone)cards+=phone+'<br>';
+    if(email)cards+=email;
+    cards+='</div>';
+    if(price)cards+='<div style="font-size:16px;font-weight:bold;">$'+parseFloat(price).toFixed(2)+'</div>';
+    cards+='</div>';
+    cards+='</div>';
+    printed++;
+  }
+  cards+='</div>';
+  if(!printed){alert('Please add at least one artwork first.');return;}
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">'+  '<style>@media print{body{margin:0;}@page{size:letter;margin:0.25in;}}'+  'body{font-family:Georgia,serif;background:#fff;}</style>'+  '</head><body>'+cards+'</body></html>';
+  var ifrId='rpg-print-frame';
+  var existing=document.getElementById(ifrId);
+  if(existing)existing.parentNode.removeChild(existing);
+  var ifr=document.createElement('iframe');
+  ifr.id=ifrId;
+  ifr.style.cssText='position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;border:none;';
+  document.body.appendChild(ifr);
+  var doc=ifr.contentDocument||ifr.contentWindow.document;
+  doc.open();doc.write(html);doc.close();
+  setTimeout(function(){
+    try{ifr.contentWindow.focus();ifr.contentWindow.print();}catch(e){}
+    setTimeout(function(){
+      if(ifr.parentNode)ifr.parentNode.removeChild(ifr);
+    },2000);
+  },300);
+}
+function exportAndEmail(){
+  var data=collectSubmission();
+  if(!data)return;
+
+  var json=JSON.stringify(data,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var safeName=(data.artist.name||'submission').replace(/[^a-zA-Z0-9 _-]/g,'').replace(/\s+/g,'-');
+  var filename='RPG-Submission-'+safeName+'.json';
+  var a=document.createElement('a');
+  a.download=filename;a.href=url;a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+
+  // Open mail app with pre-filled fields
+  var subject=encodeURIComponent('Artwork Submission — '+EXHIBIT_NAME+' — '+data.artist.name);
+  var body=encodeURIComponent('Hello,\n\nPlease find my artwork submission for '+EXHIBIT_NAME+' attached.\n\nFile to attach: '+filename+'\n\nThank you,\n'+data.artist.name);
+  var mailto='mailto:'+encodeURIComponent(GALLERY_EMAIL)+'?subject='+subject+'&body='+body;
+
+  ptoast('Submission downloaded! Attach the file to the email that opens.');
+  setTimeout(function(){window.location.href=mailto;},800);
+}
+
+// Script is at end of body — DOM is ready, wire buttons directly
+(function(){
+  var addBtn=document.getElementById('btn-add-artwork');
+  var printBtn=document.getElementById('btn-print-cards');
+  var exportBtn=document.getElementById('btn-export-email');
+  if(addBtn)addBtn.addEventListener('click',addArtwork);
+  if(printBtn)printBtn.addEventListener('click',printBackingCards);
+  if(exportBtn)exportBtn.addEventListener('click',exportAndEmail);
+  addArtwork();
+})();
+</script>
+</body>
+</html>
+
