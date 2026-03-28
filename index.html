@@ -308,7 +308,7 @@ input[type=file]{padding:7px;cursor:pointer;}
   <div class="logo-sub">Artwork Intake System</div>
 </div></div>
 <div class="hdr-badges">
-  <div class="badge version-badge">Version: <span id="app-version-badge">v50</span></div>
+  <div class="badge version-badge">Version: <span id="app-version-badge">v51</span></div>
   <div class="badge">Inventory: <span id="inv-count">0</span></div>
   <div class="badge">Queue: <span id="queue-count">0</span></div>
   <div class="badge">Sold: <span id="sold-count">0</span></div>
@@ -518,6 +518,7 @@ input[type=file]{padding:7px;cursor:pointer;}
     <button class="pv-btn" id="pv-notimported"      onclick="setPreset('notimported')">Not Queued</button>
     <button class="pv-btn" id="pv-selected"         onclick="setPreset('selected')">Selected ★</button>
     <button class="pv-btn" id="pv-cards"            onclick="setPreset('cards')">🏷 Cards</button>
+    <button class="pv-btn" id="pv-clear-all-filters" onclick="clearAllFilters()" style="border-color:rgba(192,57,43,.5);color:#e07060;">&#10005; Clear Filters</button>
   </div>
   <!-- Toolbar -->
   <div class="inv-toolbar">
@@ -526,9 +527,6 @@ input[type=file]{padding:7px;cursor:pointer;}
     <select class="inv-filter" id="inv-filter-cat"    onchange="applyFilters()"><option value="">All Mediums</option></select>
     <select class="inv-filter" id="inv-filter-exhibit" onchange="applyFilters()"><option value="">All Exhibits</option></select>
     <span class="inv-stats" id="inv-stats">0 items</span>
-  </div>
-  <div style="margin-bottom:8px;">
-    <button class="btn btn-outline btn-sm" onclick="downloadAllImages()" title="Download images for visible items as ZIP">&#8595; Images</button>
   </div>
   <!-- Title card actions inline on inventory tab -->
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
@@ -549,30 +547,36 @@ input[type=file]{padding:7px;cursor:pointer;}
     <button class="btn btn-outline btn-sm" onclick="bulkAssignVariation()">Set Variation</button>
     <select id="bulk-ex-sel" style="max-width:150px;padding:5px 8px;font-size:12px;"><option value="">Exhibit…</option></select>
     <button class="btn btn-outline btn-sm" onclick="bulkAssignExhibit()">Set</button>
-    <button class="btn btn-outline btn-sm" onclick="bulkQueue(true)"><span style="font-size:1.4em;line-height:1;vertical-align:middle;">+</span> Queue</button>
-    <button class="btn btn-outline btn-sm" onclick="bulkQueue(false)"><span style="font-size:1.4em;line-height:1;vertical-align:middle;">−</span> Queue</button>
-    <button class="btn btn-outline btn-sm" onclick="bulkCard()" id="bulk-cards-btn">&#127991; Cards</button>
     <input type="number" id="bulk-price-input" placeholder="Price…" min="0" step="0.01"
       style="max-width:80px;padding:5px 8px;font-size:12px;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--white);">
     <button class="btn btn-outline btn-sm" onclick="bulkAssignPrice()">Set Price</button>
+    <button class="btn btn-outline btn-sm" onclick="bulkQueue(true)"><span style="font-size:1.4em;line-height:1;vertical-align:middle;">+</span> Queue</button>
+    <button class="btn btn-outline btn-sm" onclick="bulkQueue(false)"><span style="font-size:1.4em;line-height:1;vertical-align:middle;">−</span> Queue</button>
+    <button class="btn btn-outline btn-sm" onclick="bulkCard()" id="bulk-cards-btn">&#127991; Cards</button>
+    <button class="btn btn-outline btn-sm" onclick="downloadAllImages()" title="Download images for visible items as ZIP">&#8595; Images</button>
     <button class="btn btn-success btn-sm" onclick="openBulkSoldModal()">&#128176; Mark Sold</button>
     <button class="btn btn-danger btn-sm"  onclick="bulkDelete()">Delete</button>
     <button class="btn btn-ghost btn-sm"   onclick="clearBulkSelection()" style="margin-left:auto;">&#10005; Clear</button>
   </div>
-  <!-- Sort bar -->
-  <div class="sort-bar" style="margin-bottom:6px;">
-    <label>Sort:</label>
-    <button class="sort-btn active" id="sort-date"     onclick="setSort('date')">Date Added<span class="arrow" id="arr-date">↓</span></button>
-    <button class="sort-btn" id="sort-artist"          onclick="setSort('artist')">Artist<span class="arrow" id="arr-artist"></span></button>
-    <button class="sort-btn" id="sort-title"           onclick="setSort('title')">Title<span class="arrow" id="arr-title"></span></button>
-    <button class="sort-btn" id="sort-price"           onclick="setSort('price')">Price<span class="arrow" id="arr-price"></span></button>
-    <button class="sort-btn" id="sort-category"        onclick="setSort('category')">Category<span class="arrow" id="arr-category"></span></button>
-  </div>
-  <!-- Bulk select-all bar -->
+  <!-- Sticky select/sort bar — shown in both views; sort columns only visible in list view -->
   <div class="sticky-bar" id="inv-sticky-bar">
     <label><input type="checkbox" id="inv-sel-all" onchange="toggleAllInv(this)"> Select All Visible</label>
+    <button class="btn btn-ghost btn-sm" type="button" onclick="deselectAllInv()">Deselect All</button>
     <button class="btn btn-ghost btn-sm" type="button" onclick="invertVisibleSelection()">Invert Visible</button>
     <span class="sel-count" id="inv-sel-count">0 selected</span>
+    <!-- List-view sort columns — hidden in grid view -->
+    <div id="list-sort-cols" style="display:none;margin-left:8px;gap:2px;flex-wrap:wrap;align-items:center;border-left:1px solid var(--border);padding-left:10px;">
+      <span style="font-size:10px;letter-spacing:1px;color:var(--ash);text-transform:uppercase;margin-right:4px;">Sort:</span>
+      <button class="sort-btn" id="lsort-title"    onclick="setSort('title')"   >Title<span class="arrow" id="larr-title"></span></button>
+      <button class="sort-btn" id="lsort-artist"   onclick="setSort('artist')"  >Artist<span class="arrow" id="larr-artist"></span></button>
+      <button class="sort-btn" id="lsort-year"     onclick="setSort('year')"    >Year<span class="arrow" id="larr-year"></span></button>
+      <button class="sort-btn" id="lsort-medium"   onclick="setSort('category')">Medium<span class="arrow" id="larr-category"></span></button>
+      <button class="sort-btn" id="lsort-variation" onclick="setSort('variation')">Variation<span class="arrow" id="larr-variation"></span></button>
+      <button class="sort-btn" id="lsort-exhibit"  onclick="setSort('exhibit')" >Exhibit<span class="arrow" id="larr-exhibit"></span></button>
+      <button class="sort-btn" id="lsort-status"   onclick="setSort('status')"  >Status<span class="arrow" id="larr-status"></span></button>
+      <button class="sort-btn" id="lsort-price"    onclick="setSort('price')"   >Price<span class="arrow" id="larr-price"></span></button>
+      <button class="sort-btn" id="lsort-date"     onclick="setSort('date')"    >Date<span class="arrow" id="larr-date"></span></button>
+    </div>
   </div>
   <div id="inv-content"></div>
 </div>
@@ -1002,6 +1006,8 @@ input[type=file]{padding:7px;cursor:pointer;}
       <div class="field"><label>SKU</label><input type="text" id="ei-sku"></div>
       <div class="field"><label>Variation <span style="color:var(--ash);font-size:9px;letter-spacing:1px;">(blank = Regular)</span></label>
         <input type="text" id="ei-variation" placeholder="e.g. Yellow, Small, Heart..."></div>
+      <div class="field"><label>Quantity in Inventory <span style="color:var(--ash);font-size:9px;letter-spacing:1px;">(for multiples)</span></label>
+        <input type="number" id="ei-quantity" min="1" step="1" value="1" placeholder="1"></div>
       <div class="field span3"><label>Description</label>
         <textarea id="ei-desc" style="min-height:72px;"></textarea></div>
     </div>
@@ -1045,6 +1051,16 @@ input[type=file]{padding:7px;cursor:pointer;}
     <div class="btn-row" style="margin-top:16px;">
       <button class="btn btn-success" onclick="executeBulkSold()">&#128176; Confirm Mark Sold</button>
       <button class="btn btn-outline" onclick="closeModal('bulk-sold-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="payout-reports-modal">
+  <div class="modal" style="max-width:560px;">
+    <h3 style="margin-bottom:4px;">Payout Reports</h3>
+    <div style="font-size:11px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-bottom:16px;" id="pr-modal-artist"></div>
+    <div id="pr-modal-body" style="max-height:420px;overflow-y:auto;"></div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-outline" onclick="closeModal('payout-reports-modal')">Close</button>
     </div>
   </div>
 </div>
@@ -1126,8 +1142,12 @@ var DB = null;
 var imageSet = new Set(); // tracks item IDs that have photos in IndexedDB
 function openDB(cb){
   if(DB){cb(DB);return;}
-  var req=indexedDB.open('rpg_images',1);
-  req.onupgradeneeded=function(e){e.target.result.createObjectStore('images',{keyPath:'id'});};
+  var req=indexedDB.open('rpg_images',2);
+  req.onupgradeneeded=function(e){
+    var db=e.target.result;
+    if(!db.objectStoreNames.contains('images'))db.createObjectStore('images',{keyPath:'id'});
+    if(!db.objectStoreNames.contains('payout_reports'))db.createObjectStore('payout_reports',{keyPath:'id'});
+  };
   req.onsuccess=function(e){DB=e.target.result;cb(DB);};
   req.onerror=function(){cb(null);};
 }
@@ -1155,10 +1175,71 @@ function deleteImage(itemId){
   });
 }
 
+// ── PAYOUT REPORT STORE ──
+// Each record: { id:'payout:ArtistName', reports:[{date,html,itemCount,total}, ...] }
+function savePayoutReport(artistName,reportObj,cb){
+  openDB(function(db){
+    if(!db){cb&&cb();return;}
+    var key='payout:'+artistName;
+    var tx=db.transaction('payout_reports','readwrite');
+    var store=tx.objectStore('payout_reports');
+    var getReq=store.get(key);
+    getReq.onsuccess=function(){
+      var rec=getReq.result||{id:key,reports:[]};
+      rec.reports.push(reportObj);
+      store.put(rec);
+    };
+    tx.oncomplete=function(){cb&&cb();};
+  });
+}
+function loadPayoutReports(artistName,cb){
+  openDB(function(db){
+    if(!db){cb([]);return;}
+    var key='payout:'+artistName;
+    var req=db.transaction('payout_reports','readonly').objectStore('payout_reports').get(key);
+    req.onsuccess=function(){cb(req.result?req.result.reports:[]);};
+    req.onerror=function(){cb([]);};
+  });
+}
+function deletePayoutReports(artistName,cb){
+  openDB(function(db){
+    if(!db){cb&&cb();return;}
+    var key='payout:'+artistName;
+    var tx=db.transaction('payout_reports','readwrite');
+    tx.objectStore('payout_reports').delete(key);
+    tx.oncomplete=function(){cb&&cb();};
+  });
+}
+function deleteOnePayoutReport(sortedIdx,artistName){
+  if(!confirm('Delete this payout report? This cannot be undone.'))return;
+  var toRemove=window._prReports&&window._prReports[sortedIdx];
+  if(!toRemove)return;
+  loadPayoutReports(artistName,function(reports){
+    // Match by timestamp (most reliable key)
+    var updated=reports.filter(function(r){return r.ts!==toRemove.ts;});
+    openDB(function(db){
+      if(!db)return;
+      var key='payout:'+artistName;
+      var tx=db.transaction('payout_reports','readwrite');
+      if(updated.length){
+        tx.objectStore('payout_reports').put({id:key,reports:updated});
+      } else {
+        tx.objectStore('payout_reports').delete(key);
+      }
+      tx.oncomplete=function(){
+        // Refresh the modal
+        loadPayoutReports(artistName,function(newReports){
+          showPayoutReportsModal(artistName,newReports);
+        });
+      };
+    });
+  });
+}
+
 // ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
-var APP_VERSION='v50';
+var APP_VERSION='v53';
 function getGalleryRep(){
   var g = state.gallery || {};
   return (g.representative && g.representative.trim()) ? g.representative.trim() : 'Gallery Representative';
@@ -1172,6 +1253,9 @@ var GALLERY_DEFAULTS={
   representative:''
 };
 var SETTINGS_CHANGELOG=[
+  {version:'v53',items:['Added delete (✕) button to each payout report row in the Artist Payout Reports modal — confirms before deleting, then refreshes the list in place.','Fixed inventory quantity edit: soldQty is now clamped to the new quantity value on save, and the sold flag updates accordingly so the remaining/total display is always correct.']},
+  {version:'v52',items:['Payout reports are now saved to each artist\'s file in IndexedDB when generated. A "Payout Reports" button appears in the Artist directory listing to view and reprint any saved report.','Fixed unsold quantity restoration: when a sold clone of a multi-quantity item is marked unsold, the parent item\'s soldQty now decrements and its sold flag resets correctly.']},
+  {version:'v51',items:['Added Clear All Filters button to inventory preset bar that resets preset, dropdowns, and search.','Added Deselect All button to sticky select bar alongside Select All Visible and Invert Visible.','Removed separate sort bar; sort buttons are now embedded in a sticky floating div that appears only in List view.','Moved Download Images button into bulk action bar, between Cards and Mark Sold.','Moved Set Price field and button to come directly after Assign Exhibit in bulk action bar.','Added Qty column to list view and qty badge to card view showing remaining/total (e.g. 2/3).','Added Quantity field to item edit modal.','When a multi-quantity item is sold, soldQty decrements remaining count and a separate sold-entry record is created in inventory for Sales tracking.']},
   {version:'v50',items:[
     'Favicon embedded directly in file as base64 — works on web and local, no external URL needed.',
     'Consignment Intake List signature block updated: date lines added for both parties, two-copy print instruction, descriptive confirmation text.',
@@ -1911,18 +1995,25 @@ function addImportToInventory(alsoQueue){
 function setPreset(p){
   state.activePreset=p;
   document.querySelectorAll('.pv-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('pv-'+p).classList.add('active');
+  var btn=document.getElementById('pv-'+p);if(btn)btn.classList.add('active');
   applyFilters();
 }
 function setSort(field){
   if(state.sortField===field) state.sortDir*=-1;
   else{state.sortField=field;state.sortDir=1;}
   saveState();
+  // Update all sort buttons (both old grid sort-bar IDs and new list sort col IDs)
   document.querySelectorAll('.sort-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('sort-'+field).classList.add('active');
-  ['date','artist','title','price','category'].forEach(function(f){
-    var el=document.getElementById('arr-'+f);
-    el.textContent=f===field?(state.sortDir===1?'↑':'↓'):'';
+  // Try both the old sort-bar button and the new list-sort-cols button
+  var oldBtn=document.getElementById('sort-'+field);
+  if(oldBtn)oldBtn.classList.add('active');
+  var lBtn=document.getElementById('lsort-'+field);
+  if(lBtn)lBtn.classList.add('active');
+  // Update arrows for list-sort-cols
+  var LIST_SORT_FIELDS=['title','artist','year','category','variation','exhibit','status','price','date'];
+  LIST_SORT_FIELDS.forEach(function(f){
+    var arEl=document.getElementById('larr-'+f);
+    if(arEl)arEl.textContent=f===field?(state.sortDir===1?'↑':'↓'):'';
   });
   applyFilters();
 }
@@ -1930,7 +2021,29 @@ function setView(v){
   state.invView=v;saveState();
   document.getElementById('vt-grid').classList.toggle('active',v==='grid');
   document.getElementById('vt-list').classList.toggle('active',v==='list');
+  var listCols=document.getElementById('list-sort-cols');
+  if(listCols)listCols.style.display=(v==='list')?'flex':'none';
   applyFilters();
+}
+function clearAllFilters(){
+  // Reset preset to All
+  state.activePreset='all';
+  document.querySelectorAll('.pv-btn').forEach(function(b){b.classList.remove('active');});
+  var allBtn=document.getElementById('pv-all');if(allBtn)allBtn.classList.add('active');
+  // Reset dropdowns
+  var af=document.getElementById('inv-filter-artist');if(af)af.value='';
+  var cf=document.getElementById('inv-filter-cat');if(cf)cf.value='';
+  var ef=document.getElementById('inv-filter-exhibit');if(ef)ef.value='';
+  // Reset search
+  var sf=document.getElementById('inv-search');if(sf)sf.value='';
+  applyFilters();
+  toast('All filters cleared.');
+}
+function deselectAllInv(){
+  selectedInvIds.clear();
+  var cb=document.getElementById('inv-sel-all');if(cb)cb.checked=false;
+  applyFilters();updateBulkBar();
+  toast('All items deselected.');
 }
 function refreshInvFilters(){
   var af=document.getElementById('inv-filter-artist');var av=af.value;
@@ -1968,7 +2081,11 @@ function applyFilters(){
     else if(state.sortField==='artist'){av=(a.artist||'').toLowerCase();bv=(b.artist||'').toLowerCase();}
     else if(state.sortField==='title'){av=(a.title||'').toLowerCase();bv=(b.title||'').toLowerCase();}
     else if(state.sortField==='price'){av=parseFloat(a.price)||0;bv=parseFloat(b.price)||0;}
-    else if(state.sortField==='category'){av=(a.category||'').toLowerCase();bv=(b.category||'').toLowerCase();}
+    else if(state.sortField==='category'){av=(a.category||a.medium||'').toLowerCase();bv=(b.category||b.medium||'').toLowerCase();}
+    else if(state.sortField==='year'){av=(a.year||'').toLowerCase();bv=(b.year||'').toLowerCase();}
+    else if(state.sortField==='variation'){av=(a.variation||'').toLowerCase();bv=(b.variation||'').toLowerCase();}
+    else if(state.sortField==='exhibit'){av=(a.exhibit||'').toLowerCase();bv=(b.exhibit||'').toLowerCase();}
+    else if(state.sortField==='status'){av=(a.sold?'sold':(a.inQueue?'queued':'active'));bv=(b.sold?'sold':(b.inQueue?'queued':'active'));}
     if(av<bv)return -1*state.sortDir;if(av>bv)return state.sortDir;return 0;
   });
   document.getElementById('inv-stats').textContent=filtered.length+' / '+state.inventory.length+' items';
@@ -2025,6 +2142,12 @@ function renderGrid(items,el){
     if(it.medium)    meta+=esc(normalizeText(it.medium))+'<br>';
     if(it.variation) meta+='<span style="color:var(--smoke);font-style:italic;">'+esc(it.variation)+'</span><br>';
     if(it.size)      meta+=esc(normalizeText(it.size));
+    var totalQty=parseInt(it.quantity)||1;
+    var soldQty=parseInt(it.soldQty)||0;
+    var remainingQty=totalQty-soldQty;
+    var qtyBadge=totalQty>1
+      ?'<span style="font-size:10px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);border-radius:10px;padding:1px 7px;color:var(--gold);margin-left:4px;">'+remainingQty+' / '+totalQty+'</span>'
+      :'';
     var isChecked=selectedInvIds.has(it.id);
     var selStyle=isChecked
       ?'border-color:var(--ember);box-shadow:0 0 0 2px rgba(232,147,58,.35),0 0 18px rgba(232,147,58,.2);'
@@ -2040,7 +2163,7 @@ function renderGrid(items,el){
       +'<div class="inv-card-body">'
       +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">'
       +'<span class="inv-card-sel-cb" data-id="'+it.id+'" style="cursor:pointer;" onclick="event.stopPropagation();cardClickToggle(event,'+it.id+')">'+cbIcon+'</span>'
-      +'<div class="inv-card-title">'+esc(it.title)+'</div></div>'
+      +'<div class="inv-card-title">'+esc(it.title)+qtyBadge+'</div></div>'
       +'<div class="inv-card-artist">'+esc(it.artist)+'</div>'
       +'<div class="inv-card-meta">'+meta+'</div>'
       +'<div style="margin-top:4px;">'+srcBadge(it)+'</div>'
@@ -2066,9 +2189,14 @@ function renderListView(items,el){
     +'<th style="width:44px;"></th>'
     +'<th onclick="setSort(\'title\')">Title</th>'
     +'<th onclick="setSort(\'artist\')">Artist</th>'
-    +'<th>Year</th>'
-    +'<th>Medium</th><th>Variation</th><th>Size</th><th>SKU</th>'
-    +'<th>Exhibit</th><th>Status</th><th onclick="setSort(\'price\')" style="text-align:right;">Price</th>'
+    +'<th onclick="setSort(\'year\')">Year</th>'
+    +'<th onclick="setSort(\'category\')">Medium</th>'
+    +'<th onclick="setSort(\'variation\')">Variation</th>'
+    +'<th>Size</th><th>SKU</th>'
+    +'<th onclick="setSort(\'exhibit\')">Exhibit</th>'
+    +'<th onclick="setSort(\'status\')">Status</th>'
+    +'<th style="text-align:center;">Qty</th>'
+    +'<th onclick="setSort(\'price\')" style="text-align:right;">Price</th>'
     +'<th style="text-align:right;">Actions</th></tr></thead><tbody>';
   items.forEach(function(it){
     var isChecked=selectedInvIds.has(it.id);
@@ -2078,6 +2206,12 @@ function renderListView(items,el){
     var cbHtml=isChecked
       ?'<span onclick="listRowToggle(event,'+it.id+')" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--ember);box-shadow:0 0 8px rgba(232,147,58,.7);cursor:pointer;font-size:12px;color:#0a0806;flex-shrink:0;">&#10003;</span>'
       :'<span onclick="listRowToggle(event,'+it.id+')" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:var(--bg-input);flex-shrink:0;"></span>';
+    var totalQty=parseInt(it.quantity)||1;
+    var soldQty=parseInt(it.soldQty)||0;
+    var remainingQty=totalQty-soldQty;
+    var qtyDisplay=totalQty>1
+      ?'<span style="font-size:11px;color:var(--gold);font-weight:600;">'+remainingQty+'</span><span style="font-size:10px;color:var(--ash);"> / '+totalQty+'</span>'
+      :'<span style="font-size:11px;color:var(--ash);">1</span>';
     html+='<tr id="lrow-'+it.id+'" style="'+rowStyle+'" onclick="listRowToggle(event,'+it.id+')">'
       +'<td onclick="event.stopPropagation()">'+cbHtml+'</td>'
       +'<td id="lthumb-'+it.id+'" style="padding:4px 6px;" onclick="event.stopPropagation()"><div style="width:40px;height:40px;background:#0d0b08;border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--border);">&#128444;</div></td>'
@@ -2090,6 +2224,7 @@ function renderListView(items,el){
       +'<td style="font-family:monospace;font-size:11px;">'+esc(it.sku||'')+'</td>'
       +'<td>'+esc(it.exhibit||'')+'</td>'
       +'<td>'+srcBadge(it)+'</td>'
+      +'<td style="text-align:center;">'+qtyDisplay+'</td>'
       +'<td class="td-price">$'+it.price+'</td>'
       +'<td class="td-actions" onclick="event.stopPropagation()">'+itemActions(it)+'</td></tr>';
   });
@@ -2287,13 +2422,30 @@ function executeBulkSold(){
   var dateVal=document.getElementById('bsold-date').value||new Date().toISOString().split('T')[0];
   var priceVal=document.getElementById('bsold-price').value;
   var n=0;
+  var newEntries=[];
   selectedInvIds.forEach(function(id){
     var it=findItem(id);if(!it||it.sold)return;
-    it.sold=true;it.saleDate=dateVal;
+    var totalQty=parseInt(it.quantity)||1;
+    var soldQty=parseInt(it.soldQty)||0;
     if(priceVal!=='')it.price=parseFloat(priceVal).toFixed(2);
-    if(it.inQueue){it.inQueue=false;}
+    if(totalQty>1){
+      soldQty++;it.soldQty=soldQty;
+      if(soldQty>=totalQty){it.sold=true;it.inQueue=false;}
+      var soldEntry=JSON.parse(JSON.stringify(it));
+      soldEntry.id=Date.now()+Math.floor(Math.random()*9999)+n;
+      soldEntry.sku=it.sku+'_s'+soldQty;
+      soldEntry.sold=true;soldEntry.saleDate=dateVal;
+      soldEntry.quantity=1;soldEntry.soldQty=0;
+      soldEntry.inQueue=false;soldEntry.cardSelected=false;
+      soldEntry._parentId=id;soldEntry._soldInstance=soldQty;
+      newEntries.push(soldEntry);
+    } else {
+      it.sold=true;it.saleDate=dateVal;
+      if(it.inQueue){it.inQueue=false;}
+    }
     n++;
   });
+  newEntries.forEach(function(e){state.inventory.push(e);});
   selectedInvIds.clear();
   saveState();updateBadges();applyFilters();
   closeModal('bulk-sold-modal');
@@ -2301,8 +2453,11 @@ function executeBulkSold(){
 }
 function toggleSold(id){
   var it=findItem(id);if(!it)return;
-  it.sold=!it.sold;
-  if(it.sold){
+  var totalQty=parseInt(it.quantity)||1;
+  var soldQty=parseInt(it.soldQty)||0;
+
+  if(!it.sold){
+    // Selling one unit
     it.saleDate=new Date().toISOString().split('T')[0];
     // resolve commission split
     if(it.artistPct===null||it.artistPct===undefined){
@@ -2310,12 +2465,54 @@ function toggleSold(id){
       it.artistPct=artist?artist.artistPct:60;
       it.galleryPct=artist?artist.galleryPct:40;
     }
-    // remove from export queue but keep in inventory
-    if(it.inQueue){it.inQueue=false;}
+    if(totalQty>1){
+      // Multi-quantity: increment soldQty, create an independent sold record
+      soldQty++;
+      it.soldQty=soldQty;
+      if(soldQty>=totalQty){it.sold=true;it.inQueue=false;}
+      // Create a sold-entry clone in inventory for Sales tab tracking
+      var soldEntry=JSON.parse(JSON.stringify(it));
+      soldEntry.id=Date.now()+Math.floor(Math.random()*1000);
+      soldEntry.sku=it.sku+'_s'+soldQty;
+      soldEntry.sold=true;
+      soldEntry.saleDate=it.saleDate;
+      soldEntry.quantity=1;soldEntry.soldQty=0;
+      soldEntry.inQueue=false;soldEntry.cardSelected=false;
+      soldEntry._parentId=id;soldEntry._soldInstance=soldQty;
+      state.inventory.push(soldEntry);
+      toast('"'+it.title+'" — unit '+soldQty+' of '+totalQty+' marked sold');
+    } else {
+      it.sold=true;
+      if(it.inQueue){it.inQueue=false;}
+      toast('"'+it.title+'" marked as sold');
+    }
+  } else {
+    // Unselling
+    if(it._parentId){
+      // This is a sold clone — unsell it and restore the parent's soldQty
+      var parent=findItem(it._parentId);
+      if(parent){
+        var pSoldQty=parseInt(parent.soldQty)||0;
+        if(pSoldQty>0){pSoldQty--;parent.soldQty=pSoldQty;}
+        if(pSoldQty<(parseInt(parent.quantity)||1)){parent.sold=false;}
+      }
+      state.inventory=state.inventory.filter(function(x){return x.id!==id;});
+      toast('"'+it.title+'" — unsold (quantity restored to parent)');
+    } else if(totalQty>1&&soldQty>0){
+      soldQty--;it.soldQty=soldQty;
+      if(soldQty<totalQty)it.sold=false;
+      // Remove most recent sold-entry clone
+      var clones=state.inventory.filter(function(x){return x._parentId===id;});
+      clones.sort(function(a,b){return (b._soldInstance||0)-(a._soldInstance||0);});
+      if(clones.length){state.inventory=state.inventory.filter(function(x){return x.id!==clones[0].id;});}
+      toast('"'+it.title+'" — unsold ('+it.soldQty+' of '+totalQty+' remain sold)');
+    } else {
+      it.sold=false;it.saleDate='';
+      toast('"'+it.title+'" marked as unsold');
+    }
   }
   // sold items always stay in inventory — only badge changes
   saveState();updateBadges();applyFilters();
-  toast(it.sold?'"'+it.title+'" marked as sold':'"'+it.title+'" marked as unsold');
 }
 function duplicateItem(id){
   var src=findItem(id);if(!src)return;
@@ -2394,6 +2591,7 @@ function openItemEdit(id){
   document.getElementById('ei-year').value=it.year||'';
   document.getElementById('ei-sku').value=it.sku||'';
   document.getElementById('ei-variation').value=it.variation||'';
+  document.getElementById('ei-quantity').value=parseInt(it.quantity)||1;
   document.getElementById('ei-artist-pct').value=it.artistPct!==null&&it.artistPct!==undefined?it.artistPct:'';
   document.getElementById('ei-gallery-pct').value=it.galleryPct!==null&&it.galleryPct!==undefined?it.galleryPct:'';
   var plain=stripHtml(it.description||'');
@@ -2435,6 +2633,15 @@ function saveItemEdit(){
   it.size=normalizeText(size);it.year=year;
   it.sku=document.getElementById('ei-sku').value.trim();
   it.variation=document.getElementById('ei-variation').value.trim();
+  var newQty=Math.max(1,parseInt(document.getElementById('ei-quantity').value)||1);
+  it.quantity=newQty;
+  // Clamp soldQty so it never exceeds the new quantity
+  if(it.soldQty!==undefined){
+    it.soldQty=Math.min(parseInt(it.soldQty)||0,newQty);
+    // If all units are sold, mark sold; if none are, clear sold flag
+    if(it.soldQty>=newQty){it.sold=true;}
+    else{it.sold=false;}
+  }
   it.descRaw=raw;it.description=buildDesc(medium,size,year,raw);
   it.artistPct=apct!==''?parseFloat(apct):null;
   it.galleryPct=gpct!==''?parseFloat(gpct):null;
@@ -3319,6 +3526,7 @@ function generateArtistReports(){
   var reportDate=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 
   var allPages='';
+  var perArtistPages={};
   var artistNames=Object.keys(byArtist).sort();
 
   artistNames.forEach(function(artistName,pageIdx){
@@ -3360,7 +3568,8 @@ function generateArtistReports(){
 
     var pageBreak=pageIdx<artistNames.length-1?'page-break-after:always;':'';
 
-    allPages+='<div style="'+pageBreak+'padding:0.5in;font-family:Arial,sans-serif;min-height:9in;display:flex;flex-direction:column;">'
+    // Build the page HTML block for this artist (reused for allPages and per-artist storage)
+    var artistPageHtml='<div style="padding:0.5in;font-family:Arial,sans-serif;min-height:9in;display:flex;flex-direction:column;">'
 
       // ── HEADER ──
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.3in;padding-bottom:0.15in;border-bottom:2pt solid #c8862a;">'
@@ -3425,6 +3634,17 @@ function generateArtistReports(){
         +'<p style="font-size:10pt;color:#8a7a68;margin-top:12px;">— The Rising Phoenix Gallery Team</p>'
       +'</div>'
     +'</div>';
+
+    // Store this artist's page separately for filing
+    perArtistPages[artistName]={
+      html:artistPageHtml,
+      totalSale:totalSale,
+      totalArtist:totalArtist,
+      itemCount:items.length
+    };
+
+    // Add page break wrapper for the combined print window
+    allPages+='<div style="'+pageBreak+'">'+artistPageHtml+'</div>';
   });
 
   var css='*{box-sizing:border-box;margin:0;padding:0;}'
@@ -3445,6 +3665,22 @@ function generateArtistReports(){
     +'</div></div>'
     +allPages+'\n</body></html>');
   win.document.close();
+
+  // ── Save each artist's payout report to IndexedDB ──
+  artistNames.forEach(function(artistName){
+    var p=perArtistPages[artistName];
+    if(!p)return;
+    var reportObj={
+      date:reportDate,
+      ts:Date.now(),
+      itemCount:p.itemCount,
+      totalSale:p.totalSale,
+      totalArtist:p.totalArtist,
+      html:p.html
+    };
+    savePayoutReport(artistName,reportObj);
+  });
+  toast('Payout report'+(artistNames.length>1?'s':'')+' saved to artist file'+(artistNames.length>1?'s':'')+'.');
 }
 
 // helper — HTML escape for report window (different context)
@@ -4056,6 +4292,7 @@ function renderArtistDir(){
       +'<button class="btn btn-outline btn-sm" onclick="openArtistModal('+i+');event.stopPropagation()">&#9998; Edit Profile</button>'
       +'<button class="btn btn-outline btn-sm" onclick="openAgreementModal('+i+',\'gift_shop\');event.stopPropagation()">&#128196; Gift Shop Agreement</button>'
       +'<button class="btn btn-outline btn-sm" onclick="openAgreementModal('+i+',\'exhibiting\');event.stopPropagation()">&#128196; Exhibiting Agreement</button>'
+      +'<button class="btn btn-outline btn-sm" id="pr-btn-'+rowId+'" onclick="openPayoutReportsModal(\''+a.name.replace(/'/g,"\\'")+'\',' + i + ');event.stopPropagation()" style="display:none;">&#128202; Payout Reports</button>'
       +'<button class="btn btn-ghost btn-sm" onclick="removeArtist('+i+');event.stopPropagation()" style="color:var(--red);">&#128465; Remove</button>'
       +'</div>'
       +'</div>'
@@ -4065,12 +4302,24 @@ function renderArtistDir(){
   // Load headshots from IndexedDB after render
   sorted.forEach(function(obj){
     var a=obj.a;var i=obj.i;
+    var rowId='adir-'+i;
     if(a.hasHeadshot){
-      var rowId='adir-'+i;
       loadArtistHeadshot(a.name,function(dataUrl){
         if(dataUrl){var img=document.getElementById('hs-'+rowId);if(img)img.src=dataUrl;}
       });
     }
+    // Show Payout Reports button if this artist has saved reports
+    (function(name,rId){
+      loadPayoutReports(name,function(reports){
+        if(reports&&reports.length){
+          var btn=document.getElementById('pr-btn-'+rId);
+          if(btn){
+            btn.style.display='';
+            btn.textContent='📊 Payout Reports ('+reports.length+')';
+          }
+        }
+      });
+    })(a.name,rowId);
   });
 }
 function toggleArtistRow(rowId){
@@ -4096,7 +4345,68 @@ function toggleWorksExpand(rowId){
 function removeArtist(i){
   if(!confirm('Remove '+state.artists[i].name+'?'))return;
   deleteArtistHeadshot(state.artists[i].name);
+  deletePayoutReports(state.artists[i].name);
   state.artists.splice(i,1);saveState();refreshArtistSelect();renderArtistDir();toast('Artist removed');
+}
+
+// ── PAYOUT REPORTS VIEWER ──
+function showPayoutReportsModal(artistName,reports){
+  var modal=document.getElementById('payout-reports-modal');
+  var titleEl=document.getElementById('pr-modal-artist');
+  var bodyEl=document.getElementById('pr-modal-body');
+  if(!modal||!titleEl||!bodyEl)return;
+  titleEl.textContent=artistName;
+  if(!reports||!reports.length){
+    bodyEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--ash);">No payout reports on file for this artist.</div>';
+    window._prReports=[];
+  } else {
+    // Reverse so newest is first
+    var sorted=reports.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0);});
+    var safeName=artistName.replace(/'/g,"\\'");
+    bodyEl.innerHTML=sorted.map(function(r,idx){
+      return '<div style="background:var(--bg-mid);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:10px;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">'
+          +'<div>'
+            +'<div style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;">'+esc(r.date)+'</div>'
+            +'<div style="font-size:11px;color:var(--ash);margin-top:3px;">'+r.itemCount+' item'+(r.itemCount!==1?'s':'')+' &nbsp;·&nbsp; Total Sale: <span style="color:var(--white);">$'+(r.totalSale||0).toFixed(2)+'</span> &nbsp;·&nbsp; Artist Payout: <span style="color:#3a9e6a;">$'+(r.totalArtist||0).toFixed(2)+'</span></div>'
+          +'</div>'
+          +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
+            +'<button class="btn btn-outline btn-sm" onclick="reprintPayoutReport('+idx+',\''+safeName+'\')" style="flex-shrink:0;">&#128424; Print / View</button>'
+            +'<button class="btn btn-sm" onclick="deleteOnePayoutReport('+idx+',\''+safeName+'\')" title="Delete this report" style="flex-shrink:0;background:transparent;border:1px solid var(--border);color:var(--ash);border-radius:4px;padding:4px 9px;cursor:pointer;font-size:14px;line-height:1;transition:color .15s,border-color .15s;" onmouseover="this.style.color=\'#e05252\';this.style.borderColor=\'#e05252\';" onmouseout="this.style.color=\'var(--ash)\';this.style.borderColor=\'var(--border)\';">&#10005;</button>'
+          +'</div>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+    // Store sorted reports for reprint/delete access
+    window._prReports=sorted;
+  }
+  openModal('payout-reports-modal');
+}
+function openPayoutReportsModal(artistName,artistIdx){
+  loadPayoutReports(artistName,function(reports){
+    showPayoutReportsModal(artistName,reports);
+  });
+}
+function reprintPayoutReport(idx,artistName){
+  if(!window._prReports||!window._prReports[idx])return;
+  var r=window._prReports[idx];
+  var css='*{box-sizing:border-box;margin:0;padding:0;}'
+    +'body{background:#fff;}'
+    +'@page{size:letter;margin:0;}'
+    +'@media print{.no-print{display:none!important;}}';
+  var win=window.open('','_blank','width=860,height=980');
+  win.document.write('<!DOCTYPE html><html><head><title>Payout Report — '+artistName+'</title>'
+    +'<style>'+css+'</style></head><body>'
+    +'<div class="no-print" style="background:#1c1710;color:#d4a843;padding:12px 20px;'
+    +'display:flex;align-items:center;justify-content:space-between;font-family:Arial,sans-serif;'
+    +'position:sticky;top:0;z-index:100;gap:12px;">'
+    +'<span style="font-size:13px;">'+artistName+' — '+r.date+'</span>'
+    +'<button onclick="window.print()" style="background:#e8933a;border:none;color:#0a0806;'
+    +'padding:8px 20px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
+    +'letter-spacing:1px;text-transform:uppercase;">Print / Save as PDF</button>'
+    +'</div>'
+    +r.html+'</body></html>');
+  win.document.close();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -5615,7 +5925,7 @@ function removeCat(name){state.categories=state.categories.filter(function(c){re
 // ═══════════════════════════════════════════════════════
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-['artist-modal','item-modal','bulk-sold-modal','inv-print-cards-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});});
+['artist-modal','item-modal','bulk-sold-modal','inv-print-cards-modal','payout-reports-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});});
 
 // ═══════════════════════════════════════════════════════
 // QUEUE SELECTION
@@ -6137,9 +6447,21 @@ reconcileImages();
 checkExhibitDates();
 updateBackupIndicator();
 populateIntakeDataLists();
-document.querySelectorAll('.sort-btn').forEach(function(b){b.classList.remove('active');});
-var sortEl=document.getElementById('sort-'+state.sortField);if(sortEl)sortEl.classList.add('active');
-var arrEl=document.getElementById('arr-'+state.sortField);if(arrEl)arrEl.textContent=state.sortDir===1?'↑':'↓';
+// Sync list-sort-cols visibility and sort arrow on load
+(function(){
+  var listCols=document.getElementById('list-sort-cols');
+  if(listCols)listCols.style.display=(state.invView==='list')?'flex':'none';
+  document.querySelectorAll('.sort-btn').forEach(function(b){b.classList.remove('active');});
+  var LIST_SORT_FIELDS=['title','artist','year','category','variation','exhibit','status','price','date'];
+  LIST_SORT_FIELDS.forEach(function(f){
+    var lBtn=document.getElementById('lsort-'+f);
+    if(lBtn){
+      if(f===state.sortField)lBtn.classList.add('active');
+      var arEl=document.getElementById('larr-'+f);
+      if(arEl)arEl.textContent=f===state.sortField?(state.sortDir===1?'↑':'↓'):'';
+    }
+  });
+})();
 
 </script>
 
