@@ -553,6 +553,7 @@ input[type=file]{padding:7px;cursor:pointer;}
     <button class="btn btn-outline btn-sm" onclick="bulkQueue(true)"><span style="font-size:1.4em;line-height:1;vertical-align:middle;">+</span> Queue</button>
     <button class="btn btn-outline btn-sm" onclick="bulkQueue(false)"><span style="font-size:1.4em;line-height:1;vertical-align:middle;">−</span> Queue</button>
     <button class="btn btn-outline btn-sm" onclick="bulkCard()" id="bulk-cards-btn">&#127991; Cards</button>
+    <button class="btn btn-outline btn-sm" onclick="openInvIntakeModal()" title="Print Artwork Intake / Drop-Off List">&#128203; Intake List</button>
     <button class="btn btn-outline btn-sm" onclick="downloadAllImages()" title="Download images for visible items as ZIP">&#8595; Images</button>
     <button class="btn btn-success btn-sm" onclick="openBulkSoldModal()">&#128176; Mark Sold</button>
     <button class="btn btn-danger btn-sm"  onclick="bulkDelete()">Delete</button>
@@ -1106,6 +1107,25 @@ input[type=file]{padding:7px;cursor:pointer;}
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="inv-intake-modal">
+  <div class="modal" style="max-width:480px;">
+    <h3>Print Artwork Intake List</h3>
+    <p style="font-size:12px;color:var(--ash);margin-bottom:18px;">Choose the artist and optionally narrow by exhibit. All matching unsold items will appear on the intake form with signature blocks for drop-off confirmation.</p>
+    <div class="field" style="margin-bottom:12px;">
+      <label>Artist <span style="color:var(--ember);">*</span></label>
+      <select id="iil-artist-sel" style="width:100%;"><option value="">— Select Artist —</option></select>
+    </div>
+    <div class="field" style="margin-bottom:18px;">
+      <label>Exhibit <span style="font-size:10px;color:var(--ash);">(optional — leave blank for all unsold items)</span></label>
+      <select id="iil-exhibit-sel" style="width:100%;"><option value="">— All Unsold Items —</option></select>
+    </div>
+    <div id="iil-preview" style="font-size:11px;color:var(--ash);min-height:18px;margin-bottom:14px;"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="executeInvIntakePrint()">&#128438; Print Intake List</button>
+      <button class="btn btn-outline" onclick="closeModal('inv-intake-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // Global keyboard cycling for all <select> elements
@@ -1239,7 +1259,7 @@ function deleteOnePayoutReport(sortedIdx,artistName){
 // ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
-var APP_VERSION='v53';
+var APP_VERSION='v54';
 function getGalleryRep(){
   var g = state.gallery || {};
   return (g.representative && g.representative.trim()) ? g.representative.trim() : 'Gallery Representative';
@@ -1253,6 +1273,7 @@ var GALLERY_DEFAULTS={
   representative:''
 };
 var SETTINGS_CHANGELOG=[
+  {version:'v54',items:['Added Inventory Intake List print — new "Intake List" button in the bulk action bar opens a picker to select artist + optional exhibit, shows a live item/value preview, then prints a polished drop-off form with artwork table (title, medium, size, year, exhibit, price), total retail value, commission terms, and dual signature blocks for artist and gallery rep. Print two copies — one per party.']},
   {version:'v53',items:['Added delete (✕) button to each payout report row in the Artist Payout Reports modal — confirms before deleting, then refreshes the list in place.','Fixed inventory quantity edit: soldQty is now clamped to the new quantity value on save, and the sold flag updates accordingly so the remaining/total display is always correct.']},
   {version:'v52',items:['Payout reports are now saved to each artist\'s file in IndexedDB when generated. A "Payout Reports" button appears in the Artist directory listing to view and reprint any saved report.','Fixed unsold quantity restoration: when a sold clone of a multi-quantity item is marked unsold, the parent item\'s soldQty now decrements and its sold flag resets correctly.']},
   {version:'v51',items:['Added Clear All Filters button to inventory preset bar that resets preset, dropdowns, and search.','Added Deselect All button to sticky select bar alongside Select All Visible and Invert Visible.','Removed separate sort bar; sort buttons are now embedded in a sticky floating div that appears only in List view.','Moved Download Images button into bulk action bar, between Cards and Mark Sold.','Moved Set Price field and button to come directly after Assign Exhibit in bulk action bar.','Added Qty column to list view and qty badge to card view showing remaining/total (e.g. 2/3).','Added Quantity field to item edit modal.','When a multi-quantity item is sold, soldQty decrements remaining count and a separate sold-entry record is created in inventory for Sales tracking.']},
@@ -4410,6 +4431,204 @@ function reprintPayoutReport(idx,artistName){
 }
 
 // ═══════════════════════════════════════════════════════
+// INVENTORY INTAKE LIST PRINT
+// ═══════════════════════════════════════════════════════
+function openInvIntakeModal(){
+  // Populate artist dropdown from artists on file
+  var aSel=document.getElementById('iil-artist-sel');
+  var exSel=document.getElementById('iil-exhibit-sel');
+  aSel.innerHTML='<option value="">— Select Artist —</option>';
+  var names=state.artists.slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+  names.forEach(function(a){
+    var o=document.createElement('option');o.value=a.name;o.textContent=a.name;aSel.appendChild(o);
+  });
+  // Populate exhibit dropdown from unique exhibit names in unsold inventory
+  exSel.innerHTML='<option value="">— All Unsold Items —</option>';
+  var exNames={};
+  state.inventory.forEach(function(it){if(!it.sold&&it.exhibit)exNames[it.exhibit]=true;});
+  Object.keys(exNames).sort().forEach(function(ex){
+    var o=document.createElement('option');o.value=ex;o.textContent=ex;exSel.appendChild(o);
+  });
+  document.getElementById('iil-preview').textContent='';
+  openModal('inv-intake-modal');
+  // Wire up live preview
+  function updatePreview(){
+    var artist=aSel.value;
+    var exhibit=exSel.value;
+    if(!artist){document.getElementById('iil-preview').textContent='';return;}
+    var items=state.inventory.filter(function(it){
+      if(it.sold)return false;
+      if(it.artist!==artist)return false;
+      if(exhibit&&it.exhibit!==exhibit)return false;
+      return true;
+    });
+    var preview=document.getElementById('iil-preview');
+    if(!items.length){
+      preview.innerHTML='<span style="color:#e05252;">No unsold items found for this selection.</span>';
+    } else {
+      var total=items.reduce(function(s,it){return s+parseFloat(it.price||0);},0);
+      preview.innerHTML='<span style="color:var(--gold);">'+items.length+' item'+(items.length!==1?'s':'')+' &nbsp;·&nbsp; Total Retail Value: <strong style="color:var(--white);">$'+total.toFixed(2)+'</strong></span>';
+    }
+  }
+  aSel.onchange=updatePreview;
+  exSel.onchange=updatePreview;
+}
+
+function executeInvIntakePrint(){
+  var artist=document.getElementById('iil-artist-sel').value;
+  var exhibit=document.getElementById('iil-exhibit-sel').value;
+  if(!artist){toast('Please select an artist.');return;}
+
+  var items=state.inventory.filter(function(it){
+    if(it.sold)return false;
+    if(it.artist!==artist)return false;
+    if(exhibit&&it.exhibit!==exhibit)return false;
+    return true;
+  });
+  if(!items.length){toast('No unsold items found for this selection.');return;}
+
+  // Sort by exhibit then title
+  items=items.slice().sort(function(a,b){
+    var ea=a.exhibit||'',eb=b.exhibit||'';
+    if(ea<eb)return -1;if(ea>eb)return 1;
+    return (a.title||'').localeCompare(b.title||'');
+  });
+
+  var g=state.gallery||{};
+  var galleryName=g.name||'The Rising Phoenix Gallery LLC';
+  var galleryAddr=g.address||'2817 Franklin St. Michigan City, IN 46360';
+  var galleryPhone=g.phone||'480.216.2583';
+  var galleryEmail=g.email||'RisingPhoenixGallery@Gmail.com';
+  var today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  // Look up artist record for commission split and contact info
+  var artistRec=null;
+  for(var i=0;i<state.artists.length;i++){
+    if(state.artists[i].name.toLowerCase()===artist.toLowerCase()){artistRec=state.artists[i];break;}
+  }
+  var aPct=artistRec?(artistRec.artistPct||60):60;
+  var gPct=100-aPct;
+  var artistPhone=artistRec?(artistRec.phone||''):'';
+  var artistEmail=artistRec?(artistRec.email||''):'';
+
+  var totalValue=0;
+  var rows='';
+  items.forEach(function(it,idx){
+    var price=parseFloat(it.price||0);
+    totalValue+=price;
+    var qty=parseInt(it.quantity)||1;
+    var qtyCell=qty>1?(' <span style="font-size:9pt;color:#888;">(×'+qty+')</span>'):'';
+    rows+='<tr>'
+      +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;color:#888;">'+(idx+1)+'</td>'
+      +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;font-weight:600;">'+escH(it.title||'')+qtyCell+'</td>'
+      +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;">'+escH(it.medium||'')+'</td>'
+      +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;">'+escH(normalizeText(it.size||''))+'</td>'
+      +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;">'+escH(it.year||'')+'</td>'
+      +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;">'+escH(it.exhibit||'')+'</td>'
+      +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;text-align:right;font-weight:600;">$'+price.toFixed(2)+'</td>'
+      +'</tr>';
+  });
+
+  var exhibitLine=exhibit?('Exhibit: <strong>'+escH(exhibit)+'</strong> &nbsp;·&nbsp; '):'';
+
+  var docHtml='<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>Artwork Intake List — '+escH(artist)+'</title>'
+    +'<style>'
+    +'*{box-sizing:border-box;}'
+    +'body{font-family:Georgia,serif;font-size:11pt;color:#111;margin:0;background:#fff;}'
+    +'.page{max-width:740px;margin:0 auto;padding:0.6in 0.75in;}'
+    +'h1{font-size:14pt;text-align:center;margin:0 0 2px;text-transform:uppercase;letter-spacing:1.5px;}'
+    +'h2{font-size:11pt;font-weight:normal;text-align:center;margin:0 0 4px;color:#555;}'
+    +'.doc-date{text-align:center;font-size:9.5pt;color:#888;margin-bottom:18px;}'
+    +'.parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;font-size:10pt;}'
+    +'.party-label{font-size:8.5pt;color:#777;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}'
+    +'.party-val{font-weight:600;}'
+    +'.party-sub{font-size:9.5pt;color:#444;margin-top:1px;}'
+    +'.terms{font-size:9pt;color:#555;border:0.5pt solid #ccc;padding:9px 11px;margin-bottom:14px;background:#fafafa;line-height:1.5;}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:10px;font-size:10pt;}'
+    +'th{background:#f5ede0;padding:6px 8px;text-align:left;font-size:8.5pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1pt solid #c8a870;}'
+    +'th:last-child{text-align:right;}'
+    +'tr:last-child td{border-bottom:none;}'
+    +'.total-row td{font-weight:bold;padding:8px 8px;border-top:1pt solid #c8a870;}'
+    +'.total-row td:last-child{text-align:right;}'
+    +'.sig-block{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:28px;}'
+    +'.sig-head{font-size:9pt;color:#444;font-weight:600;margin-bottom:3px;}'
+    +'.sig-sub{font-size:8.5pt;color:#777;margin-bottom:20px;line-height:1.4;}'
+    +'.sig-line{border-bottom:0.75pt solid #333;margin-bottom:4px;margin-top:32px;}'
+    +'.sig-name{font-weight:600;font-size:10pt;}'
+    +'.sig-detail{font-size:9pt;color:#444;margin-top:2px;}'
+    +'.date-line{display:inline-block;border-bottom:0.75pt solid #333;width:120px;margin-top:18px;}'
+    +'.date-label{font-size:9pt;color:#666;}'
+    +'.copy-note{font-size:9pt;color:#666;font-style:italic;text-align:center;margin:18px 0 10px;}'
+    +'.footer{margin-top:14px;font-size:8.5pt;color:#888;border-top:0.5pt solid #ddd;padding-top:8px;text-align:center;}'
+    +'@media print{body{margin:0;}.no-print{display:none!important;}@page{size:letter;margin:0.55in;}.page{padding:0;max-width:100%;}}'
+    +'</style></head><body>'
+    +'<div class="no-print" style="background:#1c1710;color:#d4a843;padding:10px 20px;display:flex;'
+    +'align-items:center;justify-content:space-between;font-family:Arial,sans-serif;position:sticky;top:0;z-index:100;gap:12px;">'
+    +'<span style="font-size:13px;">Artwork Intake — '+escH(artist)+(exhibit?' · '+escH(exhibit):'')+'</span>'
+    +'<button onclick="window.print()" style="background:#e8933a;border:none;color:#0a0806;padding:8px 20px;'
+    +'border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">'
+    +'Print / Save as PDF</button></div>'
+    +'<div class="page">'
+    +'<h1>'+escH(galleryName)+'</h1>'
+    +'<h2>Artwork Intake &amp; Drop-Off List</h2>'
+    +'<div class="doc-date">Date of Intake: '+today+'</div>'
+    +'<div class="parties">'
+    +'<div><div class="party-label">Artist</div>'
+    +'<div class="party-val">'+escH(artist)+'</div>'
+    +(artistPhone?'<div class="party-sub">'+escH(artistPhone)+'</div>':'')
+    +(artistEmail?'<div class="party-sub">'+escH(artistEmail)+'</div>':'')
+    +'</div>'
+    +'<div><div class="party-label">Gallery</div>'
+    +'<div class="party-val">'+escH(galleryName)+'</div>'
+    +'<div class="party-sub">'+escH(galleryAddr)+'</div>'
+    +'<div class="party-sub">'+escH(galleryPhone)+'</div>'
+    +'</div></div>'
+    +'<div class="terms">'
+    +exhibitLine
+    +'Commission: Artist '+aPct+'% / Gallery '+gPct+'% of actual sale price. '
+    +'Payment within 30 business days of finalized sale. '
+    +'Governed by the signed Consignment Agreement on file.'
+    +'</div>'
+    +'<table><thead><tr>'
+    +'<th>#</th><th>Title</th><th>Medium</th><th>Size</th><th>Year</th><th>Exhibit</th><th style="text-align:right;">Retail Price</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody>'
+    +'<tfoot><tr class="total-row">'
+    +'<td colspan="6">Total Retail Value Consigned</td>'
+    +'<td style="text-align:right;">$'+totalValue.toFixed(2)+'</td>'
+    +'</tr></tfoot></table>'
+    +'<p class="copy-note">Print two copies — one for the artist, one for gallery records. Both parties sign both copies.</p>'
+    +'<div class="sig-block">'
+    +'<div>'
+    +'<div class="sig-head">Artist Signature</div>'
+    +'<div class="sig-sub">Confirms all items listed above were delivered to the gallery in the stated condition and that the information listed is accurate.</div>'
+    +'<div class="sig-line"></div>'
+    +'<div class="sig-name">'+escH(artist)+'</div>'
+    +(artistPhone?'<div class="sig-detail">'+escH(artistPhone)+'</div>':'')
+    +'<div style="margin-top:18px;"><div class="date-line"></div><br><div class="date-label">Date</div></div>'
+    +'</div>'
+    +'<div>'
+    +'<div class="sig-head">Gallery Representative</div>'
+    +'<div class="sig-sub">Confirms receipt of all items listed above on behalf of '+escH(galleryName)+' and acknowledges the consignment terms stated herein.</div>'
+    +'<div class="sig-line"></div>'
+    +'<div class="sig-name">'+escH(getGalleryRep())+'</div>'
+    +'<div class="sig-detail">'+escH(galleryName)+'</div>'
+    +'<div style="margin-top:18px;"><div class="date-line"></div><br><div class="date-label">Date</div></div>'
+    +'</div>'
+    +'</div>'
+    +'<div class="footer">'+escH(galleryName)+' &nbsp;|&nbsp; '+escH(galleryAddr)+' &nbsp;|&nbsp; '+escH(galleryPhone)+' &nbsp;|&nbsp; '+escH(galleryEmail)+'</div>'
+    +'</div></body></html>';
+
+  closeModal('inv-intake-modal');
+  var win=window.open('','_blank','width=860,height=980');
+  if(!win){toast('Please allow popups to print.');return;}
+  win.document.write(docHtml);
+  win.document.close();
+  win.focus();
+  setTimeout(function(){try{win.print();}catch(e){}},400);
+}
+
+// ═══════════════════════════════════════════════════════
 // V37 — SUBMISSION BUILDER
 // ═══════════════════════════════════════════════════════
 function subExhibitChanged(){
@@ -5925,7 +6144,7 @@ function removeCat(name){state.categories=state.categories.filter(function(c){re
 // ═══════════════════════════════════════════════════════
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-['artist-modal','item-modal','bulk-sold-modal','inv-print-cards-modal','payout-reports-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});});
+['artist-modal','item-modal','bulk-sold-modal','inv-print-cards-modal','payout-reports-modal','inv-intake-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});});
 
 // ═══════════════════════════════════════════════════════
 // QUEUE SELECTION
