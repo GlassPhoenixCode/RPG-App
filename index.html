@@ -1273,7 +1273,7 @@ var GALLERY_DEFAULTS={
   representative:''
 };
 var SETTINGS_CHANGELOG=[
-  {version:'v55',items:['Intake List report: replaced Year column with Variation in the printed artwork table.','Square export fix: items sharing the same title now use a shared Reference Handle so Square groups them as one item with multiple variations. Option Name 1 and Option Value 1 are only populated for multi-variant items; single-variant items correctly export without an option set.','Square export fix: corrected Item Type value from "Physical" to "Physical good" to match Square\'s required format.','Square export fix: removed Option Name 1 / Option Value 1 from all rows — Square rejects having both a named Variation Name and option columns set simultaneously. Export now uses named variations only (Variation Name set, option columns blank), which is the correct path for color/style groupings.']},
+  {version:'v55',items:['Intake List report: replaced Year column with Variation in the printed artwork table.']},
   {version:'v54',items:['Added Inventory Intake List print — new "Intake List" button in the bulk action bar opens a picker to select artist + optional exhibit, shows a live item/value preview, then prints a polished drop-off form with artwork table (title, medium, size, year, exhibit, price), total retail value, commission terms, and dual signature blocks for artist and gallery rep. Print two copies — one per party.']},
   {version:'v53',items:['Added delete (✕) button to each payout report row in the Artist Payout Reports modal — confirms before deleting, then refreshes the list in place.','Fixed inventory quantity edit: soldQty is now clamped to the new quantity value on save, and the sold flag updates accordingly so the remaining/total display is always correct.']},
   {version:'v52',items:['Payout reports are now saved to each artist\'s file in IndexedDB when generated. A "Payout Reports" button appears in the Artist directory listing to view and reprint any saved report.','Fixed unsold quantity restoration: when a sold clone of a multi-quantity item is marked unsold, the parent item\'s soldQty now decrements and its sold flag resets correctly.']},
@@ -2746,26 +2746,18 @@ function exportXLSX(){
     ['Instructions'].concat(new Array(34).fill('')),
     ['Fill in your catalog information below. Avoid some of the most common errors by making sure: 1) each row contains an item name; 2) an item and its variations have the same category and description; 3) GTINs are 8,12, 13, or 14 characters and contain numbers only; and 4) every item referencing an option set has both an option set name and an option value.'].concat(new Array(34).fill('')),
     new Array(35).fill(''),exRow,headers];
-  // Pre-pass: count how many queued items share the same title (for shared-handle grouping)
-  var titleCounts={};
-  queue.forEach(function(it){titleCounts[it.title]=(titleCounts[it.title]||0)+1;});
-
   queue.forEach(function(it){
-    var isMultiVariant=titleCounts[it.title]>1;
-    // Multi-variant items share one handle derived from the title so Square groups them as one item
-    var handle=isMultiVariant
-      ?'#'+it.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'')
-      :'#'+it.sku.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    var handle='#'+it.sku.toLowerCase().replace(/[^a-z0-9]+/g,'-');
     var variationName=it.variation&&it.variation.trim()?it.variation.trim():'Regular';
     var categoriesField=it.artist?(it.medium?it.artist+', '+it.artist+' > '+it.medium:it.artist):'';
-    // Square requires either named variations OR options, never both.
-    // We use named variations only (Variation Name set, Option columns blank).
+    var optName = (it.variation && it.variation.trim() && it.variation.trim().toLowerCase() !== 'regular') ? 'Variation' : '';
+    var optVal  = (it.variation && it.variation.trim() && it.variation.trim().toLowerCase() !== 'regular') ? it.variation.trim() : '';
     var qty = (it.quantity && parseInt(it.quantity) > 1) ? String(parseInt(it.quantity)) : '1';
     rows.push([handle,it.token||'',it.title,it.title,variationName,it.sku,
       it.description,categoriesField,it.artist,it.title,'','','',
-      'unavailable','Physical good','','','',
+      'unavailable','Physical','','','',
       'Y','N','N','Y',
-      it.price,'','N','Y','N','N','N','','',qty,'','','']);
+      it.price,'','N','Y','N','N','N',optName,optVal,qty,'','','']);
   });
   var ws=XLSX.utils.aoa_to_sheet(rows);
   var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Items');
