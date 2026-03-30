@@ -2753,7 +2753,7 @@ function exportXLSX(){
     var optName = (it.variation && it.variation.trim() && it.variation.trim().toLowerCase() !== 'regular') ? 'Variation' : '';
     var optVal  = (it.variation && it.variation.trim() && it.variation.trim().toLowerCase() !== 'regular') ? it.variation.trim() : '';
     var qty = (it.quantity && parseInt(it.quantity) > 1) ? String(parseInt(it.quantity)) : '1';
-    rows.push([handle,it.token||'',it.title,it.title,variationName,it.sku,
+    rows.push([handle,'',it.title,it.title,variationName,it.sku,
       it.description,categoriesField,it.artist,it.title,'','','',
       'unavailable','Physical','','','',
       'Y','N','N','Y',
