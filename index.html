@@ -308,7 +308,7 @@ input[type=file]{padding:7px;cursor:pointer;}
   <div class="logo-sub">Artwork Intake System</div>
 </div></div>
 <div class="hdr-badges">
-  <div class="badge version-badge">Version: <span id="app-version-badge">v51</span></div>
+  <div class="badge version-badge">Version: <span id="app-version-badge">v61</span></div>
   <div class="badge">Inventory: <span id="inv-count">0</span></div>
   <div class="badge">Queue: <span id="queue-count">0</span></div>
   <div class="badge">Sold: <span id="sold-count">0</span></div>
@@ -374,6 +374,7 @@ input[type=file]{padding:7px;cursor:pointer;}
       <div class="field"><label>Medium</label>
         <input type="text" id="art-medium" list="intake-medium-list" autocomplete="off" placeholder="Type or select medium...">
         <datalist id="intake-medium-list"></datalist></div>
+      <div class="field"><label>Series <span style="color:var(--ash);font-size:9px;letter-spacing:1px;">Square POS group</span></label><input type="text" id="art-series" list="intake-series-list" autocomplete="off" placeholder="e.g. Inner Peace, Space Marble…"><datalist id="intake-series-list"></datalist></div>
       <div class="field"><label>Size / Dimensions</label><input type="text" id="art-size" placeholder='e.g. 12" x 16"'></div>
       <div class="field"><label>Year Created</label><input type="text" id="art-year" placeholder="e.g. 2024"></div>
       <div class="field"><label>Variation <span style="color:var(--ash);font-size:9px;letter-spacing:1px;">(blank = Regular)</span></label>
@@ -525,6 +526,7 @@ input[type=file]{padding:7px;cursor:pointer;}
     <div class="inv-search" style="position:relative;"><input type="text" id="inv-search" placeholder="Search title or artist..." oninput="applyFilters()" style="padding-right:30px;"><button onclick="document.getElementById('inv-search').value='';applyFilters();" id="inv-search-clear" title="Clear search" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ash);font-size:14px;padding:2px 4px;line-height:1;" >&#10005;</button></div>
     <select class="inv-filter" id="inv-filter-artist" onchange="applyFilters()"><option value="">All Artists</option></select>
     <select class="inv-filter" id="inv-filter-cat"    onchange="applyFilters()"><option value="">All Mediums</option></select>
+    <select class="inv-filter" id="inv-filter-series"  onchange="applyFilters()"><option value="">All Series</option></select>
     <select class="inv-filter" id="inv-filter-exhibit" onchange="applyFilters()"><option value="">All Exhibits</option></select>
     <span class="inv-stats" id="inv-stats">0 items</span>
   </div>
@@ -543,6 +545,8 @@ input[type=file]{padding:7px;cursor:pointer;}
     <button class="btn btn-outline btn-sm" onclick="bulkAssignArtist()">Set Artist</button>
     <select id="bulk-cat-sel" style="max-width:150px;padding:5px 8px;font-size:12px;"><option value="">Medium…</option></select>
     <button class="btn btn-outline btn-sm" onclick="bulkAssignCat()">Set</button>
+    <input type="text" id="bulk-series-input" list="bulk-series-list" autocomplete="off" placeholder="Series…" style="max-width:130px;padding:5px 8px;font-size:12px;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--white);"><datalist id="bulk-series-list"></datalist>
+    <button class="btn btn-outline btn-sm" onclick="bulkAssignSeries()">Set Series</button>
     <input type="text" id="bulk-variation-input" placeholder="Variation…" style="max-width:120px;padding:5px 8px;font-size:12px;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--white);">
     <button class="btn btn-outline btn-sm" onclick="bulkAssignVariation()">Set Variation</button>
     <select id="bulk-ex-sel" style="max-width:150px;padding:5px 8px;font-size:12px;"><option value="">Exhibit…</option></select>
@@ -1003,6 +1007,7 @@ input[type=file]{padding:7px;cursor:pointer;}
       <div class="field"><label>Price ($)</label><input type="number" id="ei-price" min="0" step="0.01"></div>
       <div class="field"><label>Medium</label><input type="text" id="ei-category-text" list="ei-cat-list" autocomplete="off" placeholder="Type or select medium..."><select id="ei-category" style="display:none;"><option value="">— Select medium —</option></select><datalist id="ei-cat-list"></datalist></div>
       <div class="field"><label>Exhibit</label><select id="ei-exhibit"><option value="">— None —</option></select></div>
+      <div class="field"><label>Series <span style="color:var(--ash);font-size:9px;letter-spacing:1px;">Square POS group</span></label><input type="text" id="ei-series" list="ei-series-list" autocomplete="off" placeholder="e.g. Inner Peace, Space Marble…"><datalist id="ei-series-list"></datalist></div>
       <div class="field"><label>Size</label><input type="text" id="ei-size"></div>
       <div class="field"><label>SKU</label><input type="text" id="ei-sku"></div>
       <div class="field"><label>Variation <span style="color:var(--ash);font-size:9px;letter-spacing:1px;">(blank = Regular)</span></label>
@@ -1259,7 +1264,7 @@ function deleteOnePayoutReport(sortedIdx,artistName){
 // ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
-var APP_VERSION='v55';
+var APP_VERSION='v61';
 function getGalleryRep(){
   var g = state.gallery || {};
   return (g.representative && g.representative.trim()) ? g.representative.trim() : 'Gallery Representative';
@@ -1273,6 +1278,12 @@ var GALLERY_DEFAULTS={
   representative:''
 };
 var SETTINGS_CHANGELOG=[
+  {version:'v61',items:['Series field now editable via bulk action bar (Set Series input between Medium and Variation, matching item field order). Artist submission portal artwork form includes Series field. Submission import carries series into inventory. Bulk series datalist auto-populates from existing series values.']},
+  {version:'v60',items:['Added Series field to inventory items — separate from Medium, appears in intake form, edit modal, inventory filter dropdown, card view, and list view. Series exports as a third category entry (Artist > Series) in Square catalog export, enabling Square POS sub-category browsing by series without changing Medium. Export filename restored to date-based RPG-Square-Import-YYYY-MM-DD.xlsx.']},
+  {version:'v59',items:['Version badge in header now shows correct version immediately on load (was showing v51 until Settings tab was visited). Export filename changed to rising-phoenix-intake-v59.xlsx. Added Series field to inventory items for Square POS grouping — separate from Medium so categories stay clean.']},
+  {version:'v58',items:['Square export: restored Option Name 1 / Option Value 1 population for non-Regular variations. Items originally imported into Square with these option columns are stored in Square as option-set items — omitting the columns on subsequent exports caused "missing option set" errors. The app now consistently populates these columns for all non-Regular variations.']},
+  {version:'v57',items:['Square export: Option Name 1 and Option Value 1 columns are now always blank. Populating these columns on items that already exist in Square as named variations caused "variation already exists" import errors. Variation Name alone is sufficient for Square to match and update existing items.']},
+  {version:'v56',items:['Square import deduplication: items are now checked against existing inventory by SKU and Token at parse time; duplicates are pre-flagged in the staging list and skipped on commit — prevents re-importing items already in inventory.']},
   {version:'v55',items:['Intake List report: replaced Year column with Variation in the printed artwork table.']},
   {version:'v54',items:['Added Inventory Intake List print — new "Intake List" button in the bulk action bar opens a picker to select artist + optional exhibit, shows a live item/value preview, then prints a polished drop-off form with artwork table (title, medium, size, year, exhibit, price), total retail value, commission terms, and dual signature blocks for artist and gallery rep. Print two copies — one per party.']},
   {version:'v53',items:['Added delete (✕) button to each payout report row in the Artist Payout Reports modal — confirms before deleting, then refreshes the list in place.','Fixed inventory quantity edit: soldQty is now clamped to the new quantity value on save, and the sold flag updates accordingly so the remaining/total display is always correct.']},
@@ -1378,6 +1389,8 @@ function loadState(){
     if(!key||seenArtists[key])return false;
     seenArtists[key]=true;return true;
   });
+  // ── DEDUPLICATION: remove duplicate inventory items by SKU (keep first) ──
+  state.inventory=dedupeInventoryBySku(state.inventory);
   // ── MIGRATION: force mediums list to canonical set ──
   var CANONICAL_MEDIUMS=["Acrylic", "Blown Glass", "Ceramics", "Charcoal", "Collage", "Digital Photography", "Etching", "Fiber and Textiles", "Film Photography", "Fused Glass", "Glass", "Gouache", "Ink", "Jewelry", "Lithograph", "Metal", "Mixed Media", "Oil Paint", "Pastel", "Pencil/Drawing", "Photography", "Printmaking", "Screen Print", "Sculpture", "Stained Glass", "Watercolor", "Weaving", "Wood", "Woodcut"];
   var needsMigration=false;
@@ -1640,8 +1653,33 @@ function nextItemId(){
   return maxId+1;
 }
 function refreshSKU(){document.getElementById('sku-preview').textContent=genSKU();}
+function normalizeSku(sku){return String(sku||'').trim().toUpperCase();}
+function hasInventorySku(sku, excludeId){
+  var key=normalizeSku(sku);
+  if(!key)return false;
+  for(var i=0;i<state.inventory.length;i++){
+    var it=state.inventory[i];
+    if(excludeId!==undefined&&excludeId!==null&&it.id===excludeId)continue;
+    if(normalizeSku(it.sku)===key)return true;
+  }
+  return false;
+}
+function dedupeInventoryBySku(items){
+  var out=[];
+  var seen={};
+  (items||[]).forEach(function(it){
+    var key=normalizeSku(it&&it.sku);
+    if(key){
+      if(seen[key])return;
+      seen[key]=true;
+    }
+    out.push(it);
+  });
+  return out;
+}
 function updateBadges(){
   document.getElementById('inv-count').textContent=state.inventory.length;
+  var vb=document.getElementById('app-version-badge');if(vb)vb.textContent=APP_VERSION;
   document.getElementById('queue-count').textContent=state.inventory.filter(function(i){return i.inQueue;}).length;
   document.getElementById('sold-count').textContent=state.inventory.filter(function(i){return i.sold;}).length;
 }
@@ -1755,6 +1793,16 @@ function refreshCatSelects(){
   var cv=cf.value;cf.innerHTML='<option value="">All Mediums</option>';
   state.categories.slice().sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;cf.appendChild(o);});
   try{cf.value=cv;}catch(e){}
+  // Series filter dropdown
+  var sf=document.getElementById('inv-filter-series');
+  if(sf){var sv=sf.value;sf.innerHTML='<option value="">All Series</option>';var smap={};state.inventory.forEach(function(it){if(it.series)smap[it.series]=1;});Object.keys(smap).sort().forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;sf.appendChild(o);});try{sf.value=sv;}catch(e){}}
+  // Series datalists for intake and edit forms
+  var intakeDl=document.getElementById('intake-series-list');
+  var editDl=document.getElementById('ei-series-list');
+  var seriesVals={};state.inventory.forEach(function(it){if(it.series)seriesVals[it.series]=1;});
+  var seriesArr=Object.keys(seriesVals).sort();
+  var bulkDl=document.getElementById('bulk-series-list');
+  [intakeDl,editDl,bulkDl].forEach(function(dl){if(!dl)return;dl.innerHTML='';seriesArr.forEach(function(s){var o=document.createElement('option');o.value=s;dl.appendChild(o);});});
 }
 function refreshExhibitSelects(){
   ['art-exhibit','ei-exhibit','bulk-ex-sel','sub-exhibit-sel'].forEach(function(id){
@@ -1816,9 +1864,11 @@ function addToInventory(alsoQueue){
   var qtyEl=document.getElementById('art-quantity');
   var multiOn=document.getElementById('art-multi-qty');
   var quantity=(multiOn&&multiOn.checked&&qtyEl)?Math.max(1,parseInt(qtyEl.value)||1):1;
+  if(hasInventorySku(sku)){toast('That SKU already exists in inventory. Duplicate SKUs are not allowed.');return;}
+  var series=document.getElementById('art-series')?document.getElementById('art-series').value.trim():'';
   var item={id:itemId,title:title,artist:artist,
     category:medium,
-    exhibit:exhibit,medium:medium,size:size,year:year,variation:variation,quantity:quantity,
+    exhibit:exhibit,medium:medium,size:size,year:year,variation:variation,quantity:quantity,series:series,
     price:parseFloat(priceS).toFixed(2),
     description:buildDesc(medium,size,year,raw),descRaw:raw,
     sku:sku,token:'',source:'new',inQueue:alsoQueue,cardSelected:alsoQueue,
@@ -1834,6 +1884,7 @@ function addToInventory(alsoQueue){
   toast('"'+title+'" added'+(alsoQueue?' and queued':''));
   ['art-title','art-price','art-desc','art-size','art-year','art-variation','sku-override'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('art-medium').value='';
+  var asEl=document.getElementById('art-series');if(asEl)asEl.value='';
   document.getElementById('art-exhibit').value='';
   var mqEl=document.getElementById('art-multi-qty');if(mqEl)mqEl.checked=false;
   var qwEl=document.getElementById('art-qty-wrap');if(qwEl)qwEl.style.display='none';
@@ -1917,19 +1968,33 @@ function parseSquareRows(rows){
     }
     var variation=(row['Variation Name']||'').trim();
     if(variation.toLowerCase()==='regular') variation='';
+    var importSku=(row['SKU']||'').trim();
+    var importToken=(row['Token']||'').trim();
+    // ── Pre-detect duplicates against existing inventory ──
+    var alreadyExists=false;
+    if(importSku&&hasInventorySku(importSku)) alreadyExists=true;
+    if(!alreadyExists&&importToken){
+      for(var di=0;di<state.inventory.length;di++){
+        if(state.inventory[di].token&&state.inventory[di].token===importToken){alreadyExists=true;break;}
+      }
+    }
     importedRows.push({title:title,artist:artistName,
       category:mediumFromCat,
       price:rawPrice?parseFloat(rawPrice).toFixed(2):'0.00',
-      sku:(row['SKU']||'').trim(),token:(row['Token']||'').trim(),description:desc,
+      sku:importSku,token:importToken,description:desc,
       medium:mediumFromCat||mM?( mediumFromCat || (mM?mM[1].replace(/<[^>]+>/g,'').trim():'')):'' ,
       size:sM?sM[1].replace(/<[^>]+>/g,'').trim():'',
       year:yM?yM[1].replace(/<[^>]+>/g,'').trim():'',
       variation:variation,
-      selected:true});
+      isDupe:alreadyExists,
+      selected:!alreadyExists});
   });
   if(!importedRows.length){toast('No valid items found.');return;}
   renderImportList();document.getElementById('import-results').style.display='';
-  toast('Found '+importedRows.length+' items');
+  var dupeCount=importedRows.filter(function(r){return r.isDupe;}).length;
+  var msg='Found '+importedRows.length+' items';
+  if(dupeCount) msg+=' · '+dupeCount+' already in inventory (pre-deselected)';
+  toast(msg);
 }
 function renderImportList(){
   var el=document.getElementById('import-list');var html='';
@@ -1937,13 +2002,15 @@ function renderImportList(){
     var meta=[item.artist,item.category,item.medium,item.size].filter(Boolean).join(' · ');
     var sel=item.selected;
     var rowStyle=sel?'border-color:var(--ember);box-shadow:0 0 0 2px rgba(232,147,58,.35),0 0 14px rgba(232,147,58,.18);background:rgba(232,147,58,.07);':'';
+    if(item.isDupe&&!sel) rowStyle='border-color:rgba(180,60,30,.4);background:rgba(180,60,30,.06);opacity:.72;';
+    var dupeTag=item.isDupe?'<span style="font-size:10px;letter-spacing:1px;padding:1px 7px;border-radius:10px;background:rgba(180,60,30,.35);color:#e07060;margin-left:7px;vertical-align:middle;">IN INVENTORY</span>':'';
     var cbHtml=sel
       ?'<span class="imp-cb-icon" data-i="'+i+'" onclick="importRowToggle(event,'+i+')" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--ember);box-shadow:0 0 8px rgba(232,147,58,.7);cursor:pointer;font-size:12px;color:#0a0806;flex-shrink:0;">&#10003;</span>'
       :'<span class="imp-cb-icon" data-i="'+i+'" onclick="importRowToggle(event,'+i+')" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:var(--bg-input);flex-shrink:0;"></span>';
     html+='<div id="irow-'+i+'" class="check-item'+(sel?' is-checked':'')+'" '
       +'style="'+rowStyle+'" onclick="importRowToggle(event,'+i+')">'
       +cbHtml
-      +'<div class="ci-info"><div class="ci-title">'+esc(item.title)+'</div>'
+      +'<div class="ci-info"><div class="ci-title">'+esc(item.title)+dupeTag+'</div>'
       +'<div class="ci-meta">'+esc(meta)+(item.sku?' · '+esc(item.sku):'')+'</div></div>'
       +'<div style="display:flex;align-items:center;gap:8px;"><div class="ci-price">$'+item.price+'</div><button class="icon-btn danger" title="Remove item" onclick="event.stopPropagation();removeImportedRow('+i+')">&#10005;</button></div></div>';
   });
@@ -1988,17 +2055,21 @@ function addImportToInventory(alsoQueue){
   importedRows.forEach(function(item,i){
     if(!item.selected)return;
     var isDupe=false;
-    for(var j=0;j<state.inventory.length;j++){
-      var ex=state.inventory[j];
-      if(item.token&&ex.token&&item.token===ex.token){isDupe=true;break;}
-      if(!item.token&&!ex.token&&ex.title===item.title&&ex.artist===item.artist){isDupe=true;break;}
+    // Check SKU first (use item.sku directly, not the generated fallback)
+    if(item.sku&&hasInventorySku(item.sku)) isDupe=true;
+    // Check token independently (not in else branch — catches re-exports where SKU may differ)
+    if(!isDupe&&item.token){
+      for(var j=0;j<state.inventory.length;j++){
+        if(state.inventory[j].token&&state.inventory[j].token===item.token){isDupe=true;break;}
+      }
     }
+    var sku=item.sku||genSKU();
     if(isDupe){skipped.push(item.title);return;}
-    var sku=item.sku||genSKU();if(!item.sku)state.counter++;
+    if(!item.sku)state.counter++;
     state.inventory.push({id:Date.now()+i,title:item.title,artist:item.artist,
       category:item.medium||item.category,exhibit:'',
       medium:item.medium||item.category,size:item.size,year:item.year,
-      variation:item.variation||'',
+      variation:item.variation||'',series:'',
       price:item.price,description:item.description,descRaw:'',sku:sku,token:item.token,
       source:'square',inQueue:alsoQueue,cardSelected:alsoQueue,
       sold:false,saleDate:'',artistPct:null,galleryPct:null,dateAdded:Date.now()});
@@ -2055,6 +2126,7 @@ function clearAllFilters(){
   // Reset dropdowns
   var af=document.getElementById('inv-filter-artist');if(af)af.value='';
   var cf=document.getElementById('inv-filter-cat');if(cf)cf.value='';
+  var cfs=document.getElementById('inv-filter-series');if(cfs)cfs.value='';
   var ef=document.getElementById('inv-filter-exhibit');if(ef)ef.value='';
   // Reset search
   var sf=document.getElementById('inv-search');if(sf)sf.value='';
@@ -2079,12 +2151,14 @@ function applyFilters(){
   var search=(document.getElementById('inv-search').value||'').toLowerCase();
   var fA=document.getElementById('inv-filter-artist').value;
   var fC=document.getElementById('inv-filter-cat').value;
+  var fSeries=document.getElementById('inv-filter-series')?document.getElementById('inv-filter-series').value:'';
   var fE=document.getElementById('inv-filter-exhibit').value;
   var p=state.activePreset;
   var filtered=state.inventory.filter(function(it){
     if(search&&!(it.title.toLowerCase().indexOf(search)>=0||it.artist.toLowerCase().indexOf(search)>=0))return false;
     if(fA&&it.artist!==fA)return false;
     if(fC&&it.category!==fC)return false;
+    if(fSeries&&(it.series||'')!==fSeries)return false;
     if(fE&&it.exhibit!==fE)return false;
     if(p==='display'&&(!it.exhibit||it.sold))return false;
     if(p==='sold'&&!it.sold)return false;
@@ -2162,6 +2236,7 @@ function renderGrid(items,el){
     var meta='';
     if(it.year)      meta+=esc(it.year)+'<br>';
     if(it.medium)    meta+=esc(normalizeText(it.medium))+'<br>';
+    if(it.series)    meta+='<span style="color:var(--gold-light);font-size:10px;">'+esc(it.series)+'</span><br>';
     if(it.variation) meta+='<span style="color:var(--smoke);font-style:italic;">'+esc(it.variation)+'</span><br>';
     if(it.size)      meta+=esc(normalizeText(it.size));
     var totalQty=parseInt(it.quantity)||1;
@@ -2213,6 +2288,7 @@ function renderListView(items,el){
     +'<th onclick="setSort(\'artist\')">Artist</th>'
     +'<th onclick="setSort(\'year\')">Year</th>'
     +'<th onclick="setSort(\'category\')">Medium</th>'
+    +'<th>Series</th>'
     +'<th onclick="setSort(\'variation\')">Variation</th>'
     +'<th>Size</th><th>SKU</th>'
     +'<th onclick="setSort(\'exhibit\')">Exhibit</th>'
@@ -2241,6 +2317,7 @@ function renderListView(items,el){
       +'<td class="td-artist">'+esc(it.artist)+'</td>'
       +'<td>'+esc(it.year||'')+'</td>'
       +'<td>'+esc(normalizeText(it.medium||''))+'</td>'
+      +'<td style="color:var(--gold-light);font-size:11px;">'+esc(it.series||'')+'</td>'
       +'<td>'+esc(it.variation||'')+'</td>'
       +'<td>'+esc(normalizeText(it.size||''))+'</td>'
       +'<td style="font-family:monospace;font-size:11px;">'+esc(it.sku||'')+'</td>'
@@ -2382,6 +2459,12 @@ function bulkAssignVariation(){
   var n=0;selectedInvIds.forEach(function(id){var it=findItem(id);if(it){it.variation=val;n++;}});
   saveState();applyFilters();toast(n+' items variation set to "'+(val||'(blank)')+ '"');
   document.getElementById('bulk-variation-input').value='';
+}
+function bulkAssignSeries(){
+  var val=document.getElementById('bulk-series-input').value.trim();
+  var n=0;selectedInvIds.forEach(function(id){var it=findItem(id);if(it){it.series=val;n++;}});
+  saveState();refreshCatSelects();applyFilters();toast(n+' items series set to "'+(val||'(blank)')+'"');
+  document.getElementById('bulk-series-input').value='';
 }
 function bulkQueue(add){
   var n=0;selectedInvIds.forEach(function(id){var it=findItem(id);if(it){it.inQueue=add;n++;}});
@@ -2613,6 +2696,7 @@ function openItemEdit(id){
   document.getElementById('ei-year').value=it.year||'';
   document.getElementById('ei-sku').value=it.sku||'';
   document.getElementById('ei-variation').value=it.variation||'';
+  var eisEl=document.getElementById('ei-series');if(eisEl)eisEl.value=it.series||'';
   document.getElementById('ei-quantity').value=parseInt(it.quantity)||1;
   document.getElementById('ei-artist-pct').value=it.artistPct!==null&&it.artistPct!==undefined?it.artistPct:'';
   document.getElementById('ei-gallery-pct').value=it.galleryPct!==null&&it.galleryPct!==undefined?it.galleryPct:'';
@@ -2647,14 +2731,17 @@ function saveItemEdit(){
     var ap=parseFloat(apct),gp=parseFloat(gpct);
     if(Math.round((ap+gp)*100)!==10000){toast('Artist % + Gallery % must equal 100.');return;}
   }
+  var editedSku=document.getElementById('ei-sku').value.trim();
+  if(hasInventorySku(editedSku,it.id)){toast('That SKU already exists on another item. Duplicate SKUs are not allowed.');return;}
   it.title=title;it.artist=document.getElementById('ei-artist').value.trim();
   it.price=parseFloat(document.getElementById('ei-price').value||0).toFixed(2);
   it.medium=medium;
   it.category=medium;
   it.exhibit=document.getElementById('ei-exhibit').value;
   it.size=normalizeText(size);it.year=year;
-  it.sku=document.getElementById('ei-sku').value.trim();
+  it.sku=editedSku;
   it.variation=document.getElementById('ei-variation').value.trim();
+  var eisSave=document.getElementById('ei-series');it.series=eisSave?eisSave.value.trim():'';
   var newQty=Math.max(1,parseInt(document.getElementById('ei-quantity').value)||1);
   it.quantity=newQty;
   // Clamp soldQty so it never exceeds the new quantity
@@ -2750,8 +2837,13 @@ function exportXLSX(){
     var handle='#'+it.sku.toLowerCase().replace(/[^a-z0-9]+/g,'-');
     var variationName=it.variation&&it.variation.trim()?it.variation.trim():'Regular';
     var categoriesField=it.artist?(it.medium?it.artist+', '+it.artist+' > '+it.medium:it.artist):'';
-    var optName = (it.variation && it.variation.trim() && it.variation.trim().toLowerCase() !== 'regular') ? 'Variation' : '';
-    var optVal  = (it.variation && it.variation.trim() && it.variation.trim().toLowerCase() !== 'regular') ? it.variation.trim() : '';
+    if(it.series&&it.artist)categoriesField+=', '+it.artist+' > '+it.series;
+    // Option Name 1 / Option Value 1: populate for non-Regular, non-blank variations.
+    // Square stores items in option-set format when these columns were present on the original
+    // import. Omitting them on updates causes "missing option set" errors on those items.
+    var hasVariation=(it.variation&&it.variation.trim()&&it.variation.trim().toLowerCase()!=='regular');
+    var optName=hasVariation?'Variation':'';
+    var optVal=hasVariation?it.variation.trim():'';
     var qty = (it.quantity && parseInt(it.quantity) > 1) ? String(parseInt(it.quantity)) : '1';
     rows.push([handle,'',it.title,it.title,variationName,it.sku,
       it.description,categoriesField,it.artist,it.title,'','','',
@@ -3841,7 +3933,7 @@ function importBackup(inp){
       if(backup.artists)   state.artists=backup.artists;
       if(backup.categories)state.categories=backup.categories;
       if(backup.exhibits)  state.exhibits=backup.exhibits;
-      if(backup.inventory) state.inventory=backup.inventory;
+      if(backup.inventory) state.inventory=dedupeInventoryBySku(backup.inventory);
       if(backup.counter)   state.counter=backup.counter;
       if(backup.gallery)   state.gallery=backup.gallery;
       saveState();updateBadges();refreshArtistSelect();refreshCatSelects();refreshExhibitSelects();
@@ -4921,6 +5013,7 @@ function buildPortalHTML(d){
     +'    +\'<div class="form-grid">\'\n'
     +'    +\'<div class="field span2"><label>Title *</label><input type="text" id="aw-title-\'+n+\'" placeholder="Title of the piece"></div>\'\n'
     +'    +\'<div class="field"><label>Medium</label><input type="text" id="aw-medium-\'+n+\'" placeholder="e.g. Oil on canvas"></div>\'\n'
+    +'    +\'<div class="field"><label>Series <span style="font-size:9px;color:#8a7a68;letter-spacing:1px;">Square POS group</span></label><input type="text" id="aw-series-\'+n+\'" placeholder="e.g. Inner Peace, Space Marble"></div>\'\n'
     +'    +\'<div class="field"><label>Size / Dimensions</label><input type="text" id="aw-size-\'+n+\'" placeholder="e.g. 12&quot; x 16&quot;"></div>\'\n'
     +'    +\'<div class="field"><label>Year Created</label><input type="text" id="aw-year-\'+n+\'" placeholder="e.g. 2024"></div>\'\n'
     +'    +\'<div class="field"><label>Price ($) *</label><input type="number" id="aw-price-\'+n+\'" placeholder="0.00" min="0" step="0.01"></div>\'\n'
@@ -5015,6 +5108,7 @@ function buildPortalHTML(d){
     +'    artworks.push({\n'
     +'      title:title.trim(),\n'
     +'      medium:(document.getElementById(\'aw-medium-\'+n)||{}).value||\'\',\n'
+    +'      series:(document.getElementById(\'aw-series-\'+n)||{}).value||\'\',\n'
     +'      size:(document.getElementById(\'aw-size-\'+n)||{}).value||\'\',\n'
     +'      year:(document.getElementById(\'aw-year-\'+n)||{}).value||\'\',\n'
     +'      price:(document.getElementById(\'aw-price-\'+n)||{}).value||\'0\',\n'
@@ -5331,6 +5425,7 @@ function commitSubImport(){
       category:aw.medium||'',
       exhibit:exhibitName,
       medium:aw.medium||'',
+      series:aw.series||'',
       size:aw.size||'',
       year:aw.year||'',
       variation:'',
