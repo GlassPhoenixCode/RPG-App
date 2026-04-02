@@ -308,7 +308,7 @@ input[type=file]{padding:7px;cursor:pointer;}
   <div class="logo-sub">Artwork Intake System</div>
 </div></div>
 <div class="hdr-badges">
-  <div class="badge version-badge">Version: <span id="app-version-badge">v61</span></div>
+  <div class="badge version-badge">Version: <span id="app-version-badge">v62</span></div>
   <div class="badge">Inventory: <span id="inv-count">0</span></div>
   <div class="badge">Queue: <span id="queue-count">0</span></div>
   <div class="badge">Sold: <span id="sold-count">0</span></div>
@@ -1264,7 +1264,7 @@ function deleteOnePayoutReport(sortedIdx,artistName){
 // ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
-var APP_VERSION='v61';
+var APP_VERSION='v62';
 function getGalleryRep(){
   var g = state.gallery || {};
   return (g.representative && g.representative.trim()) ? g.representative.trim() : 'Gallery Representative';
@@ -1278,6 +1278,7 @@ var GALLERY_DEFAULTS={
   representative:''
 };
 var SETTINGS_CHANGELOG=[
+  {version:'v62',items:['Fixed genSKU() to scan all existing inventory SKUs and find the true highest numeric suffix before generating the next one. Previously the counter could fall behind items added directly in Square (or via bulk import) that were never imported into the app, causing duplicate SKU collisions. The counter is also kept in sync after each call so subsequent SKUs stay sequential.']},
   {version:'v61',items:['Series field now editable via bulk action bar (Set Series input between Medium and Variation, matching item field order). Artist submission portal artwork form includes Series field. Submission import carries series into inventory. Bulk series datalist auto-populates from existing series values.']},
   {version:'v60',items:['Added Series field to inventory items — separate from Medium, appears in intake form, edit modal, inventory filter dropdown, card view, and list view. Series exports as a third category entry (Artist > Series) in Square catalog export, enabling Square POS sub-category browsing by series without changing Medium. Export filename restored to date-based RPG-Square-Import-YYYY-MM-DD.xlsx.']},
   {version:'v59',items:['Version badge in header now shows correct version immediately on load (was showing v51 until Settings tab was visited). Export filename changed to rising-phoenix-intake-v59.xlsx. Added Series field to inventory items for Square POS grouping — separate from Medium so categories stay clean.']},
@@ -1641,7 +1642,19 @@ function toggleAccordion(bodyId, chevronId){
 // UTILS
 // ═══════════════════════════════════════════════════════
 function genSKU(){
-  var yr=new Date().getFullYear();var s=String(state.counter);while(s.length<3)s='0'+s;
+  var yr=new Date().getFullYear();
+  // Find the true highest numeric suffix across all inventory SKUs so we
+  // never collide with items added in Square but not yet imported into the app.
+  var maxN=0;
+  (state.inventory||[]).forEach(function(it){
+    var m=String(it.sku||'').match(/^RPG-\d{4}-(\d+)$/i);
+    if(m){var n=parseInt(m[1],10);if(n>maxN)maxN=n;}
+  });
+  // Also honour state.counter so manually-tracked numbering is respected.
+  var next=Math.max(maxN+1, state.counter);
+  // Keep state.counter in sync so subsequent calls stay consistent.
+  if(next>state.counter)state.counter=next;
+  var s=String(next);while(s.length<3)s='0'+s;
   return 'RPG-'+yr+'-'+s;
 }
 function nextItemId(){
