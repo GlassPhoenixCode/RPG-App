@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>RPG — Gallery Manager v63</title>
+<title>RPG — Gallery Manager</title>
 <meta name="description" content="Rising Phoenix Gallery — Artwork Intake &amp; Inventory Manager">
 <meta name="theme-color" content="#0a0806">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1264,7 +1264,7 @@ function deleteOnePayoutReport(sortedIdx,artistName){
 // ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
-var APP_VERSION='v62';
+var APP_VERSION='v66';
 function getGalleryRep(){
   var g = state.gallery || {};
   return (g.representative && g.representative.trim()) ? g.representative.trim() : 'Gallery Representative';
@@ -1278,6 +1278,10 @@ var GALLERY_DEFAULTS={
   representative:''
 };
 var SETTINGS_CHANGELOG=[
+  {version:'v66',items:['Increased all font sizes by 1pt in the printed Gift Shop and Exhibiting Artist Consignment Agreements (body 11→12pt, headings scaled proportionally, section text, sig labels, names, and details all bumped).']},
+  {version:'v65',items:['Fixed agreement signature block layout: "By the Artist" and "By the Gallery" labels now sit above blank signing space, with the signature line at the bottom — ready for in-person or digital signing.','Exhibiting Artist agreement: Exhibition Name field is now a dropdown populated from the Exhibits tab, with dates auto-filling when a selection is made.']},
+  {version:'v64',items:['Added Inventory Report button to each artist accordion card. Prints a formal per-artist active consignment report with itemized table, commission split, artwork removal notice, and dual signature lines for artist and gallery rep.']},
+  {version:'v63',items:['Agreement print unlocked — no longer requires signatures before printing; blank signature lines appear for in-person signing.','Fixed gallery representative name displaying as raw markup in printed agreements.']},
   {version:'v62',items:['Fixed genSKU() to scan all existing inventory SKUs and find the true highest numeric suffix before generating the next one. Previously the counter could fall behind items added directly in Square (or via bulk import) that were never imported into the app, causing duplicate SKU collisions. The counter is also kept in sync after each call so subsequent SKUs stay sequential.']},
   {version:'v61',items:['Series field now editable via bulk action bar (Set Series input between Medium and Variation, matching item field order). Artist submission portal artwork form includes Series field. Submission import carries series into inventory. Bulk series datalist auto-populates from existing series values.']},
   {version:'v60',items:['Added Series field to inventory items — separate from Medium, appears in intake form, edit modal, inventory filter dropdown, card view, and list view. Series exports as a third category entry (Artist > Series) in Square catalog export, enabling Square POS sub-category browsing by series without changing Medium. Export filename restored to date-based RPG-Square-Import-YYYY-MM-DD.xlsx.']},
@@ -3281,7 +3285,7 @@ function printConsignmentIntakeList(){
     + 'body{font-family:Georgia,serif;font-size:11pt;color:#111;margin:0;background:#fff;}'
     + '.page{max-width:720px;margin:0 auto;padding:0.6in 0.75in;}'
     + 'h1{font-size:14pt;text-align:center;margin:0 0 2px;text-transform:uppercase;letter-spacing:1px;}'
-    + 'h2{font-size:11pt;font-weight:normal;text-align:center;margin:0 0 18px;color:#555;}'
+    + 'h2{font-size:12pt;font-weight:normal;text-align:center;margin:0 0 18px;color:#555;}'
     + '.parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;font-size:10pt;}'
     + '.party-label{font-size:8.5pt;color:#777;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}'
     + '.party-val{font-weight:600;}'
@@ -3430,8 +3434,8 @@ function renderExhibitSalesSummary(){
           +'<td style="padding:5px 8px;border-bottom:1px solid rgba(58,46,30,.3);color:var(--white);">'+esc(r.title)+'</td>'
           +'<td style="padding:5px 8px;border-bottom:1px solid rgba(58,46,30,.3);color:var(--smoke);">'+esc(r.artist)+'</td>'
           +'<td style="padding:5px 8px;border-bottom:1px solid rgba(58,46,30,.3);text-align:right;color:var(--gold);">$'+r.price.toFixed(2)+'</td>'
-          +'<td style="padding:5px 8px;border-bottom:1px solid rgba(58,46,30,.3);text-align:right;color:var(--smoke);">$'+r.gAmt.toFixed(2)+'</td>'
           +'<td style="padding:5px 8px;border-bottom:1px solid rgba(58,46,30,.3);text-align:right;color:#3aca7a;">$'+r.aAmt.toFixed(2)+'</td>'
+          +'<td style="padding:5px 8px;border-bottom:1px solid rgba(58,46,30,.3);text-align:right;color:var(--smoke);">$'+r.gAmt.toFixed(2)+'</td>'
           +'<td style="padding:5px 8px;border-bottom:1px solid rgba(58,46,30,.3);text-align:right;color:var(--ash);">'+esc(r.saleDate)+'</td>'
           +'</tr>';
       }).join('');
@@ -3441,15 +3445,15 @@ function renderExhibitSalesSummary(){
       +'<th style="text-align:left;padding:4px 8px;color:var(--ash);border-bottom:1px solid var(--border);">Title</th>'
       +'<th style="text-align:left;padding:4px 8px;color:var(--ash);border-bottom:1px solid var(--border);">Artist</th>'
       +'<th style="text-align:right;padding:4px 8px;color:var(--ash);border-bottom:1px solid var(--border);">Sale</th>'
-      +'<th style="text-align:right;padding:4px 8px;color:var(--ash);border-bottom:1px solid var(--border);">Gallery $</th>'
       +'<th style="text-align:right;padding:4px 8px;color:var(--ash);border-bottom:1px solid var(--border);">Artist $</th>'
+      +'<th style="text-align:right;padding:4px 8px;color:var(--ash);border-bottom:1px solid var(--border);">Gallery $</th>'
       +'<th style="text-align:right;padding:4px 8px;color:var(--ash);border-bottom:1px solid var(--border);">Date</th>'
       +'</tr></thead><tbody>'+rows
       +'<tr style="font-weight:700;">'
       +'<td colspan="2" style="padding:6px 8px;color:var(--ember);">Totals</td>'
       +'<td style="padding:6px 8px;text-align:right;color:var(--gold);">$'+totalSale.toFixed(2)+'</td>'
-      +'<td style="padding:6px 8px;text-align:right;color:var(--smoke);">$'+totalGallery.toFixed(2)+'</td>'
       +'<td style="padding:6px 8px;text-align:right;color:#3aca7a;">$'+totalArtist.toFixed(2)+'</td>'
+      +'<td style="padding:6px 8px;text-align:right;color:var(--smoke);">$'+totalGallery.toFixed(2)+'</td>'
       +'<td></td></tr>'
       +'</tbody></table>';
 
@@ -3680,8 +3684,8 @@ function generateArtistReports(){
         +'</td>'
         +'<td style="padding:9px 8px;border-bottom:1px solid #e8e0d8;text-align:right;font-family:Georgia,serif;font-size:11pt;color:#1a1208;">$'+price.toFixed(2)+'</td>'
         +'<td style="padding:9px 8px;border-bottom:1px solid #e8e0d8;text-align:center;font-size:10pt;color:#666;">'+aPct+'% / '+gPct+'%</td>'
-        +'<td style="padding:9px 8px;border-bottom:1px solid #e8e0d8;text-align:right;font-family:Georgia,serif;font-size:11pt;color:#8a5a1a;">$'+gAmt.toFixed(2)+'</td>'
         +'<td style="padding:9px 8px;border-bottom:1px solid #e8e0d8;text-align:right;font-family:Georgia,serif;font-size:11pt;color:#2e7d52;">$'+aAmt.toFixed(2)+'</td>'
+        +'<td style="padding:9px 8px;border-bottom:1px solid #e8e0d8;text-align:right;font-family:Georgia,serif;font-size:11pt;color:#8a5a1a;">$'+gAmt.toFixed(2)+'</td>'
         +'</tr>';
     });
 
@@ -3729,8 +3733,8 @@ function generateArtistReports(){
             +'<th style="padding:10px 8px;text-align:left;font-size:10pt;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Artwork</th>'
             +'<th style="padding:10px 8px;text-align:right;font-size:10pt;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Sale Price</th>'
             +'<th style="padding:10px 8px;text-align:center;font-size:10pt;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Split</th>'
-            +'<th style="padding:10px 8px;text-align:right;font-size:10pt;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:#f0c96a;">Gallery</th>'
             +'<th style="padding:10px 8px;text-align:right;font-size:10pt;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:#90d8a8;">Artist</th>'
+            +'<th style="padding:10px 8px;text-align:right;font-size:10pt;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:#f0c96a;">Gallery</th>'
           +'</tr>'
         +'</thead>'
         +'<tbody>'+rows+'</tbody>'
@@ -3739,8 +3743,8 @@ function generateArtistReports(){
             +'<td style="padding:11px 8px;font-weight:700;font-size:11pt;color:#1a1208;">TOTAL</td>'
             +'<td style="padding:11px 8px;text-align:right;font-family:Georgia,serif;font-size:12pt;font-weight:700;color:#1a1208;">$'+totalSale.toFixed(2)+'</td>'
             +'<td></td>'
-            +'<td style="padding:11px 8px;text-align:right;font-family:Georgia,serif;font-size:12pt;font-weight:700;color:#8a5a1a;">$'+totalGallery.toFixed(2)+'</td>'
             +'<td style="padding:11px 8px;text-align:right;font-family:Georgia,serif;font-size:12pt;font-weight:700;color:#2e7d52;">$'+totalArtist.toFixed(2)+'</td>'
+            +'<td style="padding:11px 8px;text-align:right;font-family:Georgia,serif;font-size:12pt;font-weight:700;color:#8a5a1a;">$'+totalGallery.toFixed(2)+'</td>'
           +'</tr>'
         +'</tfoot>'
       +'</table>'
@@ -4419,8 +4423,8 @@ function renderArtistDir(){
       +'<button class="btn btn-outline btn-sm" onclick="openArtistModal('+i+');event.stopPropagation()">&#9998; Edit Profile</button>'
       +'<button class="btn btn-outline btn-sm" onclick="openAgreementModal('+i+',\'gift_shop\');event.stopPropagation()">&#128196; Gift Shop Agreement</button>'
       +'<button class="btn btn-outline btn-sm" onclick="openAgreementModal('+i+',\'exhibiting\');event.stopPropagation()">&#128196; Exhibiting Agreement</button>'
-      +'<button class="btn btn-outline btn-sm" id="pr-btn-'+rowId+'" onclick="openPayoutReportsModal(\''+a.name.replace(/'/g,"\\'")+'\',' + i + ');event.stopPropagation()" style="display:none;">&#128202; Payout Reports</button>'
       +'<button class="btn btn-outline btn-sm" onclick="printInventoryReport(\''+a.name.replace(/'/g,"\\'")+'\');event.stopPropagation()">&#128196; Inventory Report</button>'
+      +'<button class="btn btn-outline btn-sm" id="pr-btn-'+rowId+'" onclick="openPayoutReportsModal(\''+a.name.replace(/'/g,"\\'")+'\',' + i + ');event.stopPropagation()" style="display:none;">&#128202; Payout Reports</button>'
       +'<button class="btn btn-ghost btn-sm" onclick="removeArtist('+i+');event.stopPropagation()" style="color:var(--red);">&#128465; Remove</button>'
       +'</div>'
       +'</div>'
@@ -4477,16 +4481,15 @@ function removeArtist(i){
   state.artists.splice(i,1);saveState();refreshArtistSelect();renderArtistDir();toast('Artist removed');
 }
 
-// ── ARTIST INVENTORY REPORT ──
+// ── ARTIST INVENTORY REPORT ──────────────────────────────────────
 function printInventoryReport(artistName){
-  var g=state.settings||{};
+  var g=gallerySnapshot();
   var galleryName=g.name||'The Rising Phoenix Gallery LLC';
   var galleryAddr=g.address||'2817 Franklin St. Michigan City, IN 46360';
   var galleryPhone=g.phone||'480.216.2583';
   var galleryEmail=g.email||'RisingPhoenixGallery@Gmail.com';
   var today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 
-  // Find artist record
   var artistRec=null;
   for(var i=0;i<state.artists.length;i++){
     if(state.artists[i].name.toLowerCase()===artistName.toLowerCase()){artistRec=state.artists[i];break;}
@@ -4495,7 +4498,6 @@ function printInventoryReport(artistName){
   var aPct=a.artistPct!==undefined?a.artistPct:60;
   var gPct=100-aPct;
 
-  // Active (unsold) inventory for this artist
   var items=state.inventory.filter(function(it){return it.artist===artistName&&!it.sold;});
 
   var rows='';
@@ -4519,12 +4521,12 @@ function printInventoryReport(artistName){
   }
 
   var docHtml='<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    +'<title>Inventory Report — '+escH(artistName)+'</title>'
+    +'<title>Inventory Report \u2014 '+escH(artistName)+'</title>'
     +'<style>'
     +'body{font-family:Georgia,serif;font-size:11pt;color:#111;margin:0;background:#fff;}'
     +'.page{max-width:760px;margin:0 auto;padding:0.6in 0.75in;}'
     +'h1{font-size:14pt;text-align:center;margin:0 0 2px;text-transform:uppercase;letter-spacing:1px;}'
-    +'h2{font-size:11pt;font-weight:normal;text-align:center;margin:0 0 4px;color:#555;}'
+    +'h2{font-size:12pt;font-weight:normal;text-align:center;margin:0 0 4px;color:#555;}'
     +'.report-date{font-size:9pt;text-align:center;color:#888;margin-bottom:18px;}'
     +'.parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;font-size:10pt;}'
     +'.party-label{font-size:8.5pt;color:#777;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}'
@@ -4538,7 +4540,6 @@ function printInventoryReport(artistName){
     +'.total-row td:last-child{text-align:right;}'
     +'.section-title{font-size:10pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;color:#333;border-bottom:0.5pt solid #ccc;padding-bottom:4px;margin:20px 0 10px;}'
     +'.sig-block{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:24px;}'
-    +'.sig-col{}'
     +'.sig-role{font-size:9pt;color:#555;font-weight:600;margin-bottom:2px;}'
     +'.sig-desc{font-size:8.5pt;color:#777;margin-bottom:20px;line-height:1.4;}'
     +'.sig-line{border-bottom:0.75pt solid #333;margin-bottom:5px;height:36px;}'
@@ -4553,7 +4554,6 @@ function printInventoryReport(artistName){
     +'<h1>'+escH(galleryName)+'</h1>'
     +'<h2>Artist Inventory Report</h2>'
     +'<div class="report-date">Report Generated: '+today+'</div>'
-
     +'<div class="parties">'
     +'<div>'
     +'<div class="party-label">Artist</div>'
@@ -4570,29 +4570,24 @@ function printInventoryReport(artistName){
     +'<div class="party-sub">'+escH(galleryEmail)+'</div>'
     +'</div>'
     +'</div>'
-
     +'<div class="notice">Commission Rate: Artist <strong>'+aPct+'%</strong> / Gallery <strong>'+gPct+'%</strong> of actual sale price &nbsp;&bull;&nbsp; '
     +'This report reflects all works currently on active consignment as of the date above. '
     +'Items marked as sold are not included. Governed by the signed Consignment Agreement on file.</div>'
-
-    +'<div class="section-title">Active Inventory on Consignment — '+items.length+' Item'+(items.length!==1?'s':'')+'</div>'
+    +'<div class="section-title">Active Inventory on Consignment \u2014 '+items.length+' Item'+(items.length!==1?'s':'')+'</div>'
     +'<table>'
     +'<thead><tr><th>#</th><th>Title</th><th>SKU</th><th>Medium</th><th>Size</th><th>Year</th><th>Retail Price</th></tr></thead>'
     +'<tbody>'+rows+'</tbody>'
     +(items.length?'<tfoot><tr class="total-row"><td colspan="6">Total Retail Value on Consignment</td>'
       +'<td style="text-align:right;">$'+totalValue.toFixed(2)+'</td></tr></tfoot>':'')
     +'</table>'
-
     +'<div class="removal-notice">'
-    +'<strong>&#9432; Artwork Removal</strong> &nbsp;— If this report is being used to document the removal of artwork from the gallery, '
+    +'<strong>&#9432; Artwork Removal</strong> &nbsp;\u2014 If this report is being used to document the removal of artwork from the gallery, '
     +'both parties must sign below to acknowledge that all items listed above have been returned to the artist in satisfactory condition. '
-    +'The artist&rsquo;s signature releases the gallery from further custodial responsibility for the returned works. '
-    +'Please print two copies &mdash; one for the artist and one for gallery records.'
+    +'The artist\u2019s signature releases the gallery from further custodial responsibility for the returned works. '
+    +'Please print two copies \u2014 one for the artist and one for gallery records.'
     +'</div>'
-
     +'<div class="section-title">Authorization &amp; Acknowledgment</div>'
     +'<div class="sig-block">'
-
     +'<div class="sig-col">'
     +'<div class="sig-role">Artist Signature</div>'
     +'<div class="sig-desc">Acknowledges that the inventory listed above is accurate and, if applicable, confirms receipt of all listed works upon removal from the gallery.</div>'
@@ -4601,7 +4596,6 @@ function printInventoryReport(artistName){
     +(a.phone?'<div class="sig-detail">'+escH(a.phone)+'</div>':'')
     +'<div class="date-line"><div class="sig-line"></div><div class="sig-detail">Date</div></div>'
     +'</div>'
-
     +'<div class="sig-col">'
     +'<div class="sig-role">Gallery Representative</div>'
     +'<div class="sig-desc">Confirms the accuracy of this inventory report on behalf of '+escH(galleryName)+' and, if applicable, authorizes the release of listed works.</div>'
@@ -4610,7 +4604,6 @@ function printInventoryReport(artistName){
     +'<div class="sig-detail">'+escH(galleryName)+'</div>'
     +'<div class="date-line"><div class="sig-line"></div><div class="sig-detail">Date</div></div>'
     +'</div>'
-
     +'</div>'
     +'<div class="footer">'+escH(galleryName)+' &nbsp;|&nbsp; '+escH(galleryAddr)+' &nbsp;|&nbsp; '+escH(galleryPhone)+' &nbsp;|&nbsp; '+escH(galleryEmail)+'</div>'
     +'</div></body></html>';
@@ -4791,7 +4784,7 @@ function executeInvIntakePrint(){
     +'body{font-family:Georgia,serif;font-size:11pt;color:#111;margin:0;background:#fff;}'
     +'.page{max-width:740px;margin:0 auto;padding:0.6in 0.75in;}'
     +'h1{font-size:14pt;text-align:center;margin:0 0 2px;text-transform:uppercase;letter-spacing:1.5px;}'
-    +'h2{font-size:11pt;font-weight:normal;text-align:center;margin:0 0 4px;color:#555;}'
+    +'h2{font-size:12pt;font-weight:normal;text-align:center;margin:0 0 4px;color:#555;}'
     +'.doc-date{text-align:center;font-size:9.5pt;color:#888;margin-bottom:18px;}'
     +'.parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;font-size:10pt;}'
     +'.party-label{font-size:8.5pt;color:#777;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}'
@@ -5675,14 +5668,35 @@ function openAgreementModal(artistIdx, type) {
   if(type === 'exhibiting'){
     titleEl.textContent = 'Exhibiting Artist Consignment Agreement';
     exhibitFields.style.display = 'block';
-    // Pre-fill exhibit name from most recent exhibit
+    // Populate exhibit dropdown from state.exhibits
+    var sel = document.getElementById('agr-exhibit-name');
+    sel.innerHTML = '<option value="">— Select Exhibition —</option>';
     if(state.exhibits && state.exhibits.length){
-      var ex = state.exhibits[state.exhibits.length-1];
-      document.getElementById('agr-exhibit-name').value = ex.name || '';
-      var sd = ex.showStart ? fmtD(ex.showStart) : '';
-      var ed = ex.showEnd ? fmtD(ex.showEnd) : '';
+      state.exhibits.forEach(function(ex){
+        var opt = document.createElement('option');
+        opt.value = ex.name || '';
+        opt.textContent = ex.name || '';
+        sel.appendChild(opt);
+      });
+      // Default to most recent exhibit
+      var latest = state.exhibits[state.exhibits.length-1];
+      sel.value = latest.name || '';
+      var sd = latest.showStart ? fmtD(latest.showStart) : '';
+      var ed = latest.showEnd ? fmtD(latest.showEnd) : '';
       document.getElementById('agr-exhibit-dates').value = sd && ed ? sd + ' – ' + ed : '';
     }
+    // Update dates when selection changes
+    sel.onchange = function(){
+      var chosen = state.exhibits.filter(function(e){return e.name===sel.value;})[0];
+      if(chosen){
+        var sd2 = chosen.showStart ? fmtD(chosen.showStart) : '';
+        var ed2 = chosen.showEnd ? fmtD(chosen.showEnd) : '';
+        document.getElementById('agr-exhibit-dates').value = sd2 && ed2 ? sd2 + ' – ' + ed2 : '';
+      } else {
+        document.getElementById('agr-exhibit-dates').value = '';
+      }
+      updateAgreementPreview();
+    };
   } else {
     titleEl.textContent = 'Gift Shop Artist Consignment Agreement';
     exhibitFields.style.display = 'none';
@@ -5845,15 +5859,13 @@ function printAgreement(){
   if(_activeSigTarget && _activeSigTarget.indexOf('agr') >= 0){
     commitActiveSig('agr-active-sig-wrap','agr-sig-active-display','agr-sig-artist-status','agr-sig-gallery-status');
   }
-  if(sigIsEmpty('agr-sig-artist')){ toast('Artist signature required. Tap \'Sign: Artist\' above.'); return; }
-  if(sigIsEmpty('agr-sig-gallery')){ toast('Gallery signature required. Tap \'Sign: Gallery\' above.'); return; }
 
   var a = state.artists[agrArtistIdx] || {};
   var g = state.gallery || {};
   var artistPct = parseInt(document.getElementById('agr-artist-pct').value)||60;
   var galleryPct = 100 - artistPct;
-  var artistSig = document.getElementById('agr-sig-artist').toDataURL('image/png');
-  var gallerySig = document.getElementById('agr-sig-gallery').toDataURL('image/png');
+  var artistSig = sigIsEmpty('agr-sig-artist') ? '' : document.getElementById('agr-sig-artist').toDataURL('image/png');
+  var gallerySig = sigIsEmpty('agr-sig-gallery') ? '' : document.getElementById('agr-sig-gallery').toDataURL('image/png');
   var dateVal = document.getElementById('agr-date').value || new Date().toISOString().slice(0,10);
   var dateParts = dateVal.split('-');
   var dateStr = dateParts.length===3 ? (parseInt(dateParts[1])+'/'+dateParts[2]+'/'+dateParts[0]) : dateVal;
@@ -5912,7 +5924,7 @@ function buildAgreementHTML(d){
     '<div class="sig-block">' +
       '<div class="sig-col">' +
         '<div class="sig-label">By the Artist &mdash; Dated: '+d.dateStr+'</div>' +
-        '<img src="'+d.artistSig+'" class="sig-img" alt="Artist signature">' +
+        (d.artistSig ? '<img src="'+d.artistSig+'" class="sig-img" alt="Artist signature">' : '<div class="sig-space"></div>') +
         '<div class="sig-line"></div>' +
         '<div class="sig-name">'+esc(d.artistName)+'</div>' +
         (d.artistPhone ? '<div class="sig-detail">Phone: '+esc(d.artistPhone)+'</div>' : '') +
@@ -5921,9 +5933,9 @@ function buildAgreementHTML(d){
       '</div>' +
       '<div class="sig-col">' +
         '<div class="sig-label">By '+esc(d.galleryName)+' &mdash; Dated: '+d.dateStr+'</div>' +
-        '<img src="'+d.gallerySig+'" class="sig-img" alt="Gallery signature">' +
+        (d.gallerySig ? '<img src="'+d.gallerySig+'" class="sig-img" alt="Gallery signature">' : '<div class="sig-space"></div>') +
         '<div class="sig-line"></div>' +
-        '<div class="sig-name">\'+getGalleryRep()+\'</div>' +
+        '<div class="sig-name">'+esc(getGalleryRep())+'</div>' +
         '<div class="sig-detail">'+esc(d.galleryName)+'</div>' +
         '<div class="sig-detail">'+esc(d.galleryAddr)+'</div>' +
         '<div class="sig-detail">Phone: '+esc(d.galleryPhone)+'  |  Email: '+esc(d.galleryEmail)+'</div>' +
@@ -5934,23 +5946,24 @@ function buildAgreementHTML(d){
 
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>' +
     '<style>' +
-    'body{font-family:Georgia,serif;font-size:11pt;line-height:1.65;color:#111;margin:0;background:#fff;}' +
+    'body{font-family:Georgia,serif;font-size:12pt;line-height:1.65;color:#111;margin:0;background:#fff;}' +
     '.page{max-width:720px;margin:0 auto;padding:0.75in 0.75in 0.5in;}' +
-    'h1{font-size:13pt;text-align:center;letter-spacing:1px;margin:0 0 4px;text-transform:uppercase;}' +
-    'h2{font-size:11pt;text-align:center;margin:0 0 4px;font-weight:normal;font-style:italic;}' +
-    '.subtitle{text-align:center;font-size:10pt;margin:0 0 16px;color:#444;}' +
-    '.parties{border:1pt solid #ccc;padding:10px 14px;margin:0 0 16px;font-size:10pt;background:#fafafa;}' +
+    'h1{font-size:14pt;text-align:center;letter-spacing:1px;margin:0 0 4px;text-transform:uppercase;}' +
+    'h2{font-size:12pt;text-align:center;margin:0 0 4px;font-weight:normal;font-style:italic;}' +
+    '.subtitle{text-align:center;font-size:11pt;margin:0 0 16px;color:#444;}' +
+    '.parties{border:1pt solid #ccc;padding:10px 14px;margin:0 0 16px;font-size:11pt;background:#fafafa;}' +
     '.section{margin-bottom:12px;}' +
-    '.section-title{font-weight:bold;font-size:10.5pt;margin-bottom:4px;}' +
-    '.section p{margin:3px 0 3px 0;font-size:10pt;}' +
-    '.divider{text-align:center;margin:16px 0;font-size:14pt;letter-spacing:8px;color:#888;}' +
+    '.section-title{font-weight:bold;font-size:11.5pt;margin-bottom:4px;}' +
+    '.section p{margin:3px 0 3px 0;font-size:11pt;}' +
+    '.divider{text-align:center;margin:16px 0;font-size:15pt;letter-spacing:8px;color:#888;}' +
     '.sig-block{display:flex;gap:24px;margin-top:20px;}' +
     '.sig-col{flex:1;}' +
-    '.sig-label{font-size:9pt;color:#555;margin-bottom:4px;}' +
-    '.sig-img{height:60px;display:block;margin-bottom:2px;max-width:100%;}' +
-    '.sig-line{border-bottom:1pt solid #333;margin-bottom:3px;}' +
-    '.sig-name{font-weight:bold;font-size:10pt;}' +
-    '.sig-detail{font-size:9pt;color:#444;}' +
+    '.sig-label{font-size:10pt;color:#555;margin-bottom:0;}' +
+    '.sig-img{height:60px;display:block;margin-top:4px;max-width:100%;}' +
+    '.sig-space{height:56px;}' +
+    '.sig-line{border-bottom:1pt solid #333;margin-bottom:3px;margin-top:0;}' +
+    '.sig-name{font-weight:bold;font-size:11pt;}' +
+    '.sig-detail{font-size:10pt;color:#444;}' +
     '@media print{body{margin:0;}@page{size:letter;margin:0.75in;}' +
     '.page{padding:0;max-width:100%;}}' +
     '</style></head><body><div class="page">' +
@@ -5981,9 +5994,9 @@ function buildGiftShopSections(d){
     if(!line.trim()){
       out += '<p style="margin:0 0 4px;"></p>';
     } else if(/^\d+\.\s+[A-Z]/.test(line)){
-      out += '<div class="section-title" style="font-weight:bold;font-size:10.5pt;margin:12px 0 4px;">'+esc(line)+'</div>';
+      out += '<div class="section-title" style="font-weight:bold;font-size:11.5pt;margin:12px 0 4px;">'+esc(line)+'</div>';
     } else {
-      out += '<p class="section" style="font-size:10pt;margin:3px 0;">'+esc(line)+'</p>';
+      out += '<p class="section" style="font-size:11pt;margin:3px 0;">'+esc(line)+'</p>';
     }
   });
   return out;
@@ -5998,9 +6011,9 @@ function buildExhibitingSections(d){
     if(!line.trim()){
       out += '<p style="margin:0 0 4px;"></p>';
     } else if(/^\d+\.\s+[A-Z]/.test(line)){
-      out += '<div class="section-title" style="font-weight:bold;font-size:10.5pt;margin:12px 0 4px;">'+esc(line)+'</div>';
+      out += '<div class="section-title" style="font-weight:bold;font-size:11.5pt;margin:12px 0 4px;">'+esc(line)+'</div>';
     } else {
-      out += '<p class="section" style="font-size:10pt;margin:3px 0;">'+esc(line)+'</p>';
+      out += '<p class="section" style="font-size:11pt;margin:3px 0;">'+esc(line)+'</p>';
     }
   });
   return out;
@@ -6971,7 +6984,7 @@ populateIntakeDataLists();
       <!-- Exhibit fields — shown for exhibiting agreement only -->
       <div id="agr-exhibit-fields" style="display:none;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-          <div class="field"><label>Exhibition Name</label><input type="text" id="agr-exhibit-name"></div>
+          <div class="field"><label>Exhibition Name</label><select id="agr-exhibit-name" style="width:100%;padding:6px 8px;background:var(--bg-mid);border:1px solid var(--border);border-radius:4px;color:var(--white);font-size:13px;"><option value="">— Select Exhibition —</option></select></div>
           <div class="field"><label>Exhibition Dates</label><input type="text" id="agr-exhibit-dates" placeholder="e.g. April 5 – May 3, 2026"></div>
         </div>
       </div>
