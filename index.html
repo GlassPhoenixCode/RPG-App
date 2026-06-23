@@ -1070,6 +1070,27 @@ input[type=file]{padding:7px;cursor:pointer;}
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="inventory-report-status-modal">
+  <div class="modal" style="max-width:480px;">
+    <h3>Inventory Report Status</h3>
+    <p style="font-size:12px;color:var(--ash);margin:4px 0 14px;">Choose how this artist inventory report should be labeled.</p>
+    <div style="font-size:11px;letter-spacing:2px;color:var(--ash);text-transform:uppercase;margin-bottom:14px;" id="ir-status-artist"></div>
+    <div class="btn-row" style="flex-direction:column;align-items:stretch;margin-top:0;">
+      <button class="btn btn-outline" style="justify-content:flex-start;text-align:left;white-space:normal;line-height:1.4;" onclick="runInventoryReportWithStatus('1')">
+        1 &mdash; Incoming / New Inventory
+      </button>
+      <button class="btn btn-outline" style="justify-content:flex-start;text-align:left;white-space:normal;line-height:1.4;" onclick="runInventoryReportWithStatus('2')">
+        2 &mdash; Current Inventory Record
+      </button>
+      <button class="btn btn-outline" style="justify-content:flex-start;text-align:left;white-space:normal;line-height:1.4;" onclick="runInventoryReportWithStatus('3')">
+        3 &mdash; Outgoing / Leaving Gallery
+      </button>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-outline" onclick="closeModal('inventory-report-status-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="inv-print-cards-modal">
   <div class="modal" style="max-width:480px;">
     <h3>Print Selected Items</h3>
@@ -4482,7 +4503,26 @@ function removeArtist(i){
 }
 
 // ── ARTIST INVENTORY REPORT ──────────────────────────────────────
-function printInventoryReport(artistName){
+var pendingInventoryReportArtist='';
+function openInventoryReportStatusModal(artistName){
+  pendingInventoryReportArtist=artistName||'';
+  var label=document.getElementById('ir-status-artist');
+  if(label)label.textContent=pendingInventoryReportArtist;
+  openModal('inventory-report-status-modal');
+}
+function runInventoryReportWithStatus(reportChoice){
+  var artistName=pendingInventoryReportArtist;
+  closeModal('inventory-report-status-modal');
+  if(!artistName){toast('No artist selected for inventory report.');return;}
+  printInventoryReport(artistName,reportChoice);
+}
+function printInventoryReport(artistName,reportChoice){
+  if(!reportChoice){
+    openInventoryReportStatusModal(artistName);
+    return;
+  }
+  var win=window.open('','_blank','width=900,height=960');
+  if(!win){toast('Please allow popups to print the report.');return;}
   var g=gallerySnapshot();
   var galleryName=g.name||'The Rising Phoenix Gallery LLC';
   var galleryAddr=g.address||'2817 Franklin St. Michigan City, IN 46360';
@@ -4497,14 +4537,42 @@ function printInventoryReport(artistName){
   var a=artistRec||{name:artistName};
   var aPct=a.artistPct!==undefined?a.artistPct:60;
   var gPct=100-aPct;
+  reportChoice=String(reportChoice).trim().toLowerCase();
+  var reportStatus={
+    label:'Current Inventory Record',
+    detail:'This report is a record of the current inventory physically present in the gallery.'
+  };
+  if(reportChoice==='1'||reportChoice==='incoming'||reportChoice==='new'){
+    reportStatus={
+      label:'Incoming / New Inventory',
+      detail:'This report documents artwork coming into the gallery as new or newly received inventory.'
+    };
+  }else if(reportChoice==='3'||reportChoice==='outgoing'||reportChoice==='leaving'){
+    reportStatus={
+      label:'Outgoing / Leaving Gallery',
+      detail:'This report documents artwork leaving the gallery and should be signed when released or returned.'
+    };
+  }
 
-  var items=state.inventory.filter(function(it){return it.artist===artistName&&!it.sold;});
+  function remainingInventoryQty(it){
+    var totalQty=Math.max(1,parseInt(it.quantity,10)||1);
+    var soldQty=Math.max(0,parseInt(it.soldQty,10)||0);
+    return Math.max(0,totalQty-soldQty);
+  }
+
+  var items=state.inventory.filter(function(it){
+    return it.artist===artistName&&!it.sold&&remainingInventoryQty(it)>0;
+  });
 
   var rows='';
   var totalValue=0;
+  var totalUnits=0;
   items.forEach(function(it,idx){
     var price=parseFloat(it.price)||0;
-    totalValue+=price;
+    var qty=remainingInventoryQty(it);
+    var lineTotal=price*qty;
+    totalUnits+=qty;
+    totalValue+=lineTotal;
     rows+='<tr>'
       +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;color:#555;">'+(idx+1)+'</td>'
       +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;font-weight:600;">'+escH(it.title||'')+'</td>'
@@ -4512,12 +4580,14 @@ function printInventoryReport(artistName){
       +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;">'+escH(it.medium||'')+'</td>'
       +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;">'+escH(it.size||'')+'</td>'
       +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;">'+escH(it.year||'')+'</td>'
+      +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;text-align:center;font-weight:600;">'+qty+'</td>'
       +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;text-align:right;font-weight:600;">$'+price.toFixed(2)+'</td>'
+      +'<td style="padding:7px 8px;border-bottom:1px solid #e0d8cc;text-align:right;font-weight:600;">$'+lineTotal.toFixed(2)+'</td>'
       +'</tr>';
   });
 
   if(!items.length){
-    rows='<tr><td colspan="7" style="padding:16px 8px;text-align:center;color:#888;font-style:italic;">No active inventory on consignment.</td></tr>';
+    rows='<tr><td colspan="9" style="padding:16px 8px;text-align:center;color:#888;font-style:italic;">No active inventory on consignment.</td></tr>';
   }
 
   var docHtml='<!DOCTYPE html><html><head><meta charset="UTF-8">'
@@ -4570,14 +4640,18 @@ function printInventoryReport(artistName){
     +'<div class="party-sub">'+escH(galleryEmail)+'</div>'
     +'</div>'
     +'</div>'
-    +'<div class="notice">Commission Rate: Artist <strong>'+aPct+'%</strong> / Gallery <strong>'+gPct+'%</strong> of actual sale price &nbsp;&bull;&nbsp; '
+    +'<div class="notice"><strong>Inventory Status:</strong> '+escH(reportStatus.label)+'<br>'
+    +escH(reportStatus.detail)+'<br><br>'
+    +'Commission Rate: Artist <strong>'+aPct+'%</strong> / Gallery <strong>'+gPct+'%</strong> of actual sale price &nbsp;&bull;&nbsp; '
     +'This report reflects all works currently on active consignment as of the date above. '
-    +'Items marked as sold are not included. Governed by the signed Consignment Agreement on file.</div>'
-    +'<div class="section-title">Active Inventory on Consignment \u2014 '+items.length+' Item'+(items.length!==1?'s':'')+'</div>'
+    +'Items marked as sold are not included. Quantities shown are the remaining units physically in the gallery. '
+    +'Governed by the signed Consignment Agreement on file.</div>'
+    +'<div class="section-title">Active Inventory on Consignment \u2014 '+totalUnits+' Artwork'+(totalUnits!==1?'s':'')+' in Gallery</div>'
     +'<table>'
-    +'<thead><tr><th>#</th><th>Title</th><th>SKU</th><th>Medium</th><th>Size</th><th>Year</th><th>Retail Price</th></tr></thead>'
+    +'<thead><tr><th>#</th><th>Title</th><th>SKU</th><th>Medium</th><th>Size</th><th>Year</th><th style="text-align:center;">Qty</th><th>Unit Price</th><th>Line Total</th></tr></thead>'
     +'<tbody>'+rows+'</tbody>'
-    +(items.length?'<tfoot><tr class="total-row"><td colspan="6">Total Retail Value on Consignment</td>'
+    +(items.length?'<tfoot><tr class="total-row"><td colspan="6">Total Retail Value on Consignment ('+totalUnits+' Artwork'+(totalUnits!==1?'s':'')+')</td>'
+      +'<td style="text-align:center;">'+totalUnits+'</td><td></td>'
       +'<td style="text-align:right;">$'+totalValue.toFixed(2)+'</td></tr></tfoot>':'')
     +'</table>'
     +'<div class="removal-notice">'
@@ -4608,8 +4682,6 @@ function printInventoryReport(artistName){
     +'<div class="footer">'+escH(galleryName)+' &nbsp;|&nbsp; '+escH(galleryAddr)+' &nbsp;|&nbsp; '+escH(galleryPhone)+' &nbsp;|&nbsp; '+escH(galleryEmail)+'</div>'
     +'</div></body></html>';
 
-  var win=window.open('','_blank','width=900,height=960');
-  if(!win){toast('Please allow popups to print.');return;}
   win.document.write(docHtml);
   win.document.close();
   win.focus();
@@ -6413,7 +6485,7 @@ function removeCat(name){state.categories=state.categories.filter(function(c){re
 // ═══════════════════════════════════════════════════════
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-['artist-modal','item-modal','bulk-sold-modal','inv-print-cards-modal','payout-reports-modal','inv-intake-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});});
+['artist-modal','item-modal','bulk-sold-modal','inv-print-cards-modal','payout-reports-modal','inventory-report-status-modal','inv-intake-modal'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});});
 
 // ═══════════════════════════════════════════════════════
 // QUEUE SELECTION
